@@ -1,4 +1,6 @@
 package cloud.macrocephal.flow.core;
 
-public class Single {
+import cloud.macrocephal.flow.core.internal.BasePublisher;
+
+public final class Single<T> extends BasePublisher<T> {
 }
