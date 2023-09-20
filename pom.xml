@@ -6,7 +6,7 @@
 
   <groupId>cloud.macrocephal</groupId>
   <artifactId>flow</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>${revision}</version>
 
   <name>flow</name>
   <url>${project.url</url>
@@ -16,6 +16,7 @@
     <project.url>https://flow.macrocephal.cloud</project.url>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
+    <revision>1.0-SNAPSHOT</revision>
   </properties>
 
   <dependencies>
