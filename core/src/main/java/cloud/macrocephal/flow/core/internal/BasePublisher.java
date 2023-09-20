@@ -49,5 +49,12 @@ public class BasePublisher<T> implements Flow.Publisher<T> {
 
     synchronized private void publish(Signal<T> signal) {
         requireNonNull(signal);
+        switch (signal) {
+            case Signal.Complete() -> {
+                subscriberCount.forEach((subscriber, ignored) -> subscriber.onComplete());
+                subscriberCount.clear();
+            }
+            default -> {}
+        }
     }
 }

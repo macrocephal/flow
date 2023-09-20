@@ -1,6 +1,7 @@
 package test.cloud.macrocephal.flow.core;
 
 import cloud.macrocephal.flow.core.Signal;
+import cloud.macrocephal.flow.core.Single;
 import cloud.macrocephal.flow.core.Swarm;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -104,6 +105,72 @@ public class SwarmTest {
         public void throw_NPE() {
             new Swarm<>(publish -> this.publish = publish);
             assertThrows(NullPointerException.class, () -> publish.accept(null));
+        }
+    }
+
+    @Nested
+    class PublishCompleteSignal {
+        private Consumer<Signal<Object>> publish;
+
+        @Test
+        public void run_onComplete_for_each_subscriber() {
+            final var subscriberOne = mock(Flow.Subscriber.class);
+            final var subscriberTwo = mock(Flow.Subscriber.class);
+            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            //noinspection unchecked
+            publisher.subscribe(subscriberOne);
+            //noinspection unchecked
+            publisher.subscribe(subscriberTwo);
+            publish.accept(new Signal.Complete<>());
+            verify(subscriberOne).onComplete();
+            verify(subscriberTwo).onComplete();
+        }
+
+        @Test
+        public void run_onComplete_once_for_each_subscriber() {
+            final var subscriberOne = mock(Flow.Subscriber.class);
+            final var subscriberTwo = mock(Flow.Subscriber.class);
+            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            //noinspection unchecked
+            publisher.subscribe(subscriberOne);
+            //noinspection unchecked
+            publisher.subscribe(subscriberTwo);
+            publish.accept(new Signal.Complete<>());
+            verify(subscriberOne, times(1)).onComplete();
+            verify(subscriberTwo, times(1)).onComplete();
+        }
+
+        @Test
+        public void run_onComplete_once_for_each_subscriber_in_subscription() {
+            final var subscriberOne = mock(Flow.Subscriber.class);
+            final var subscriberTwo = mock(Flow.Subscriber.class);
+            final var inOrder = inOrder(subscriberOne, subscriberTwo);
+            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            //noinspection unchecked
+            publisher.subscribe(subscriberOne);
+            //noinspection unchecked
+            publisher.subscribe(subscriberTwo);
+            publish.accept(new Signal.Complete<>());
+            inOrder.verify(subscriberOne, times(1)).onComplete();
+            inOrder.verify(subscriberTwo, times(1)).onComplete();
+        }
+
+        @Test
+        public void remove_all_subscriber_from_publisher() {
+            final var subscriberOne = mock(Flow.Subscriber.class);
+            final var subscriberTwo = mock(Flow.Subscriber.class);
+            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            //noinspection unchecked
+            publisher.subscribe(subscriberOne);
+            //noinspection unchecked
+            publisher.subscribe(subscriberTwo);
+            publish.accept(new Signal.Complete<>());
+            //noinspection unchecked
+            publisher.subscribe(subscriberOne);
+            //noinspection unchecked
+            publisher.subscribe(subscriberTwo);
+            verify(subscriberOne, times(2)).onSubscribe(any(Flow.Subscription.class));
+            verify(subscriberTwo, times(2)).onSubscribe(any(Flow.Subscription.class));
         }
     }
 }
