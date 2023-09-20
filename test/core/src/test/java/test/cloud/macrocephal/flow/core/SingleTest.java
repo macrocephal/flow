@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
@@ -155,21 +156,25 @@ public class SingleTest {
         }
 
         @Test
-        public void remove_all_subscriber_from_publisher() {
+        public void cause_further_calls_to_publish_to_be_ignored() {
             final var subscriberOne = mock(Flow.Subscriber.class);
-            final var subscriberTwo = mock(Flow.Subscriber.class);
             final var publisher = new Single<>(publish -> this.publish = publish);
             //noinspection unchecked
             publisher.subscribe(subscriberOne);
+            publish.accept(new Signal.Complete<>());
+            assertDoesNotThrow(() -> publish.accept(null));
+        }
+
+        @Test
+        public void cause_further_calls_to_subscribe_to_be_ignored() {
+            final var subscriberOne = mock(Flow.Subscriber.class);
+            final var publisher = new Single<>(publish -> this.publish = publish);
             //noinspection unchecked
-            publisher.subscribe(subscriberTwo);
+            publisher.subscribe(subscriberOne);
             publish.accept(new Signal.Complete<>());
             //noinspection unchecked
             publisher.subscribe(subscriberOne);
-            //noinspection unchecked
-            publisher.subscribe(subscriberTwo);
-            verify(subscriberOne, times(2)).onSubscribe(any(Flow.Subscription.class));
-            verify(subscriberTwo, times(2)).onSubscribe(any(Flow.Subscription.class));
+            verify(subscriberOne, times(1)).onSubscribe(any(Flow.Subscription.class));
         }
     }
 }
