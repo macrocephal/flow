@@ -13,6 +13,7 @@
     <url>${project.url}</url>
     <modules>
         <module>test</module>
+        <module>core</module>
     </modules>
 
     <properties>

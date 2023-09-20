@@ -1,4 +1,4 @@
-package cloud.macrocephal;
+package cloud.macrocephal.flow.core;
 
 import org.junit.jupiter.api.Test;
 
