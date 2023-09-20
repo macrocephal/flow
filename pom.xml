@@ -9,11 +9,11 @@
   <version>1.0-SNAPSHOT</version>
 
   <name>flow</name>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
+  <url>${project.url</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.url>https://flow.macrocephal.cloud</project.url>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
   </properties>
