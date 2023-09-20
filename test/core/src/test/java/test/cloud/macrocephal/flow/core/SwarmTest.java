@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,5 +32,10 @@ public class SwarmTest {
         new Swarm<>(publishExposure);
         //noinspection unchecked
         verify(publishExposure, times(1)).accept(any(Consumer.class));
+    }
+
+    @Test
+    public void throw_when_publisher_subscribe_method_is_invoked_with_null() {
+        assertThrows(NullPointerException.class, () -> new Swarm<>(Function.identity()::apply).subscribe(null));
     }
 }

@@ -4,6 +4,7 @@ import cloud.macrocephal.flow.core.Signal;
 
 import java.util.concurrent.Flow;
 import java.util.function.Consumer;
+
 import static java.util.Objects.requireNonNull;
 
 public class BasePublisher<T> implements Flow.Publisher<T> {
@@ -14,6 +15,7 @@ public class BasePublisher<T> implements Flow.Publisher<T> {
 
     @Override
     public void subscribe(Flow.Subscriber<? super T> subscriber) {
+        requireNonNull(subscriber);
     }
 
     synchronized private void publish(Signal<T> signal) {
