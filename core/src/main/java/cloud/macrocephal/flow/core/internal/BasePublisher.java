@@ -25,6 +25,7 @@ public class BasePublisher<T> implements Flow.Publisher<T> {
             final var subscription = new Flow.Subscription() {
                 @Override
                 public void request(long n) {
+                    BasePublisher.this.request(subscriber, n);
                 }
 
                 @Override
@@ -35,6 +36,11 @@ public class BasePublisher<T> implements Flow.Publisher<T> {
             subscriber.onSubscribe(subscription);
             return BigInteger.ZERO;
         });
+    }
+
+    synchronized private void request(Flow.Subscriber<? super T> subscriber, long n) {
+        subscriberCount.computeIfPresent(subscriber, (ignored, counter) ->
+                counter.add(BigInteger.valueOf(Math.max(0L, n))));
     }
 
     synchronized private void cancel(Flow.Subscriber<? super T> subscriber) {
