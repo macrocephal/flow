@@ -9,7 +9,9 @@ import java.util.concurrent.Flow;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -58,5 +60,38 @@ public class SwarmTest {
         //noinspection unchecked
         swarm.subscribe(subscriber);
         verify(subscriber, times(1)).onSubscribe(any(Flow.Subscription.class));
+    }
+
+    @Test
+    public void calling_cancel_on_subscription_remove_the_associated_subscriber_from_publisher() {
+        final var subscriber = mock(Flow.Subscriber.class);
+        final var swarm = new Swarm<>(Function.identity()::apply);
+        final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
+        //noinspection unchecked
+        swarm.subscribe(subscriber);
+        verify(subscriber, times(1)).onSubscribe(subscriptionArgumentCaptor.capture());
+
+        final var subscription = subscriptionArgumentCaptor.getValue();
+        subscription.cancel();
+        //noinspection unchecked
+        swarm.subscribe(subscriber);
+        verify(subscriber, times(2)).onSubscribe(any(Flow.Subscription.class));
+    }
+
+    @Test
+    public void reused_subscriber_receive_different_subscription() {
+        final var subscriber = mock(Flow.Subscriber.class);
+        final var swarm = new Swarm<>(Function.identity()::apply);
+        final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
+        //noinspection unchecked
+        swarm.subscribe(subscriber);
+        verify(subscriber, times(1)).onSubscribe(subscriptionArgumentCaptor.capture());
+
+        final var subscription = subscriptionArgumentCaptor.getValue();
+        subscription.cancel();
+        //noinspection unchecked
+        swarm.subscribe(subscriber);
+        verify(subscriber, times(2)).onSubscribe(subscriptionArgumentCaptor.capture());
+        assertThat(subscription).isNotEqualTo(subscriptionArgumentCaptor.getValue());
     }
 }

@@ -29,11 +29,16 @@ public class BasePublisher<T> implements Flow.Publisher<T> {
 
                 @Override
                 public void cancel() {
+                    BasePublisher.this.cancel(subscriber);
                 }
             };
             subscriber.onSubscribe(subscription);
             return BigInteger.ZERO;
         });
+    }
+
+    synchronized private void cancel(Flow.Subscriber<? super T> subscriber) {
+        subscriberCount.remove(subscriber);
     }
 
     synchronized private void publish(Signal<T> signal) {
