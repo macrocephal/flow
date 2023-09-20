@@ -35,6 +35,13 @@
         <dependencies>
             <!-- TESTING -->
             <dependency>
+                <groupId>cloud.macrocephal</groupId>
+                <artifactId>test-flow-base</artifactId>
+                <version>${revision}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>
                 <version>5.10.0</version>
