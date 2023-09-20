@@ -7,9 +7,13 @@
     <groupId>cloud.macrocephal</groupId>
     <artifactId>flow</artifactId>
     <version>${revision}</version>
+    <packaging>pom</packaging>
 
     <name>flow</name>
     <url>${project.url}</url>
+    <modules>
+        <module>test</module>
+    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
