@@ -48,5 +48,6 @@ public class BasePublisher<T> implements Flow.Publisher<T> {
     }
 
     synchronized private void publish(Signal<T> signal) {
+        requireNonNull(signal);
     }
 }

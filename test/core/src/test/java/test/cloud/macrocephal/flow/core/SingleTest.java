@@ -2,6 +2,7 @@ package test.cloud.macrocephal.flow.core;
 
 import cloud.macrocephal.flow.core.Signal;
 import cloud.macrocephal.flow.core.Single;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -93,5 +94,16 @@ public class SingleTest {
         single.subscribe(subscriber);
         verify(subscriber, times(2)).onSubscribe(subscriptionArgumentCaptor.capture());
         assertThat(subscription).isNotEqualTo(subscriptionArgumentCaptor.getValue());
+    }
+
+    @Nested
+    class PublishNullSignal {
+        private Consumer<Signal<Object>> publish;
+
+        @Test
+        public void throw_NPE() {
+            new Single<>(publish -> this.publish = publish);
+            assertThrows(NullPointerException.class, () -> publish.accept(null));
+        }
     }
 }
