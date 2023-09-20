@@ -5,16 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>cloud.macrocephal</groupId>
-        <artifactId>flow-parent</artifactId>
+        <artifactId>test-flow</artifactId>
         <version>${revision}</version>
     </parent>
 
-    <artifactId>test-flow</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>test-flow-base</artifactId>
 
-    <name>test-flow</name>
-    <url>${project.url</url>
-    <modules>
-        <module>base</module>
-    </modules>
+    <name>test-flow-base</name>
+    <url>${project.url}</url>
 </project>
