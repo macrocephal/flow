@@ -26,6 +26,7 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- SELF -->
             <dependency>
                 <groupId>cloud.macrocephal</groupId>
                 <artifactId>flow-core</artifactId>
@@ -33,7 +34,7 @@
                 <scope>test</scope>
             </dependency>
 
-            <!-- TESTING -->
+            <!-- TESTING:self -->
             <dependency>
                 <groupId>cloud.macrocephal</groupId>
                 <artifactId>test-flow-base</artifactId>
@@ -41,6 +42,7 @@
                 <scope>test</scope>
             </dependency>
 
+            <!-- TESTING:direct -->
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>
@@ -86,6 +88,7 @@
                 <version>5.3.1</version>
                 <scope>test</scope>
             </dependency>
+
             <!-- TESTING:override -->
             <dependency>
                 <groupId>net.bytebuddy</groupId>
