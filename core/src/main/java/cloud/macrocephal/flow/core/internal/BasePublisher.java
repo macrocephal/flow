@@ -61,6 +61,11 @@ public class BasePublisher<T> implements Flow.Publisher<T> {
                     subscriberCount.clear();
                     opened = false;
                 }
+                case Signal.Error<T>(final var throwable) -> {
+                    subscriberCount.forEach((subscriber, ignored) -> subscriber.onError(throwable));
+                    subscriberCount.clear();
+                    opened = false;
+                }
                 default -> {
                 }
             }

@@ -177,4 +177,77 @@ public class SwarmTest {
             verify(subscriberOne, times(1)).onSubscribe(any(Flow.Subscription.class));
         }
     }
+
+    @Nested
+    class PublishErrorSignal {
+        private Consumer<Signal<Object>> publish;
+
+        @Test
+        public void run_onError_for_each_subscriber() {
+            final var throwable = mock(Throwable.class);
+            final var subscriberOne = mock(Flow.Subscriber.class);
+            final var subscriberTwo = mock(Flow.Subscriber.class);
+            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            //noinspection unchecked
+            publisher.subscribe(subscriberOne);
+            //noinspection unchecked
+            publisher.subscribe(subscriberTwo);
+            publish.accept(new Signal.Error<>(throwable));
+            verify(subscriberOne).onError(throwable);
+            verify(subscriberTwo).onError(throwable);
+        }
+
+        @Test
+        public void run_onError_once_for_each_subscriber() {
+            final var throwable = mock(Throwable.class);
+            final var subscriberOne = mock(Flow.Subscriber.class);
+            final var subscriberTwo = mock(Flow.Subscriber.class);
+            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            //noinspection unchecked
+            publisher.subscribe(subscriberOne);
+            //noinspection unchecked
+            publisher.subscribe(subscriberTwo);
+            publish.accept(new Signal.Error<>(throwable));
+            verify(subscriberOne, times(1)).onError(throwable);
+            verify(subscriberTwo, times(1)).onError(throwable);
+        }
+
+        @Test
+        public void run_onError_once_for_each_subscriber_in_subscription() {
+            final var throwable = mock(Throwable.class);
+            final var subscriberOne = mock(Flow.Subscriber.class);
+            final var subscriberTwo = mock(Flow.Subscriber.class);
+            final var inOrder = inOrder(subscriberOne, subscriberTwo);
+            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            //noinspection unchecked
+            publisher.subscribe(subscriberOne);
+            //noinspection unchecked
+            publisher.subscribe(subscriberTwo);
+            publish.accept(new Signal.Error<>(throwable));
+            inOrder.verify(subscriberOne, times(1)).onError(throwable);
+            inOrder.verify(subscriberTwo, times(1)).onError(throwable);
+        }
+
+        @Test
+        public void cause_further_calls_to_publish_to_be_ignored() {
+            final var subscriberOne = mock(Flow.Subscriber.class);
+            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            //noinspection unchecked
+            publisher.subscribe(subscriberOne);
+            publish.accept(new Signal.Error<>(mock(Throwable.class)));
+            assertDoesNotThrow(() -> publish.accept(null));
+        }
+
+        @Test
+        public void cause_further_calls_to_subscribe_to_be_ignored() {
+            final var subscriberOne = mock(Flow.Subscriber.class);
+            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            //noinspection unchecked
+            publisher.subscribe(subscriberOne);
+            publish.accept(new Signal.Error<>(mock(Throwable.class)));
+            //noinspection unchecked
+            publisher.subscribe(subscriberOne);
+            verify(subscriberOne, times(1)).onSubscribe(any(Flow.Subscription.class));
+        }
+    }
 }
