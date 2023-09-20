@@ -22,6 +22,16 @@ public class BasePublisher<T> implements Flow.Publisher<T> {
     public void subscribe(Flow.Subscriber<? super T> subscriber) {
         requireNonNull(subscriber);
         subscriberCount.computeIfAbsent(subscriber, ignored -> {
+            final var subscription = new Flow.Subscription() {
+                @Override
+                public void request(long n) {
+                }
+
+                @Override
+                public void cancel() {
+                }
+            };
+            subscriber.onSubscribe(subscription);
             return BigInteger.ZERO;
         });
     }

@@ -5,6 +5,7 @@ import cloud.macrocephal.flow.core.Swarm;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
+import java.util.concurrent.Flow;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -37,5 +38,25 @@ public class SwarmTest {
     @Test
     public void throw_when_publisher_subscribe_method_is_invoked_with_null() {
         assertThrows(NullPointerException.class, () -> new Swarm<>(Function.identity()::apply).subscribe(null));
+    }
+
+    @Test
+    public void subscriber_onSubscribe_is_invoked_with_subscription_when_subscribed_to_publisher() {
+        final var subscriber = mock(Flow.Subscriber.class);
+        //noinspection unchecked
+        new Swarm<>(Function.identity()::apply).subscribe(subscriber);
+        verify(subscriber).onSubscribe(any(Flow.Subscription.class));
+    }
+
+    @Test
+    public void subscriber_onSubscribe_is_invoked_with_subscription_when_subscribed_to_publisher_only_first_time() {
+        final var subscriber = mock(Flow.Subscriber.class);
+        final var swarm = new Swarm<>(Function.identity()::apply);
+        //noinspection unchecked
+        swarm.subscribe(subscriber);
+        verify(subscriber, times(1)).onSubscribe(any(Flow.Subscription.class));
+        //noinspection unchecked
+        swarm.subscribe(subscriber);
+        verify(subscriber, times(1)).onSubscribe(any(Flow.Subscription.class));
     }
 }
