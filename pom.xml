@@ -34,6 +34,13 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>cloud.macrocephal</groupId>
+                <artifactId>flow-core</artifactId>
+                <version>${revision}</version>
+                <scope>test</scope>
+            </dependency>
+
             <!-- TESTING -->
             <dependency>
                 <groupId>cloud.macrocephal</groupId>
