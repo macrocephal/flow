@@ -250,4 +250,120 @@ public class SingleTest {
             verify(subscriberOne, times(1)).onSubscribe(any(Flow.Subscription.class));
         }
     }
+
+    @Nested
+    class PublishValueSignal {
+        private Consumer<Signal<Object>> publish;
+
+        @Test
+        public void do_not_call_subscriber_onNext() {
+            final var subscriber = mock(Flow.Subscriber.class);
+            final var publisher = new Single<>(publish -> this.publish = publish);
+            //noinspection unchecked
+            publisher.subscribe(subscriber);
+            publish.accept(new Signal.Value<>(0));
+            //noinspection unchecked
+            verify(subscriber, times(0)).onNext(any());
+        }
+
+        @Test
+        public void call_subscriber_onNext_when_request_count_allows_it() {
+            final var subscriber = mock(Flow.Subscriber.class);
+            final var publisher = new Single<>(publish -> this.publish = publish);
+            final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
+            //noinspection unchecked
+            publisher.subscribe(subscriber);
+            verify(subscriber, times(1)).onSubscribe(subscriptionArgumentCaptor.capture());
+            subscriptionArgumentCaptor.getValue().request(1);
+            publish.accept(new Signal.Value<>(-1));
+            //noinspection unchecked
+            verify(subscriber).onNext(-1);
+        }
+
+        @Test
+        public void call_subscriber_onNext_once_when_request_count_allow_it() {
+            final var subscriber = mock(Flow.Subscriber.class);
+            final var publisher = new Single<>(publish -> this.publish = publish);
+            final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
+            //noinspection unchecked
+            publisher.subscribe(subscriber);
+            verify(subscriber, times(1)).onSubscribe(subscriptionArgumentCaptor.capture());
+            subscriptionArgumentCaptor.getValue().request(1);
+            publish.accept(new Signal.Value<>(-1));
+            //noinspection unchecked
+            verify(subscriber, times(1)).onNext(-1);
+        }
+
+        @Test
+        public void call_subscriber_onNext_once_as_much_as_request_count_allow_it() {
+            final var subscriber = mock(Flow.Subscriber.class);
+            final var inOrder = inOrder(subscriber);
+            final var publisher = new Single<>(publish -> this.publish = publish);
+            final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
+            //noinspection unchecked
+            publisher.subscribe(subscriber);
+            verify(subscriber, times(1)).onSubscribe(subscriptionArgumentCaptor.capture());
+            subscriptionArgumentCaptor.getValue().request(3);
+            publish.accept(new Signal.Value<>(-1));
+            publish.accept(new Signal.Value<>(+0));
+            publish.accept(new Signal.Value<>(+1));
+            publish.accept(new Signal.Value<>(+2));
+            //noinspection unchecked
+            verify(subscriber, times(3)).onNext(any());
+            //noinspection unchecked
+            inOrder.verify(subscriber, times(1)).onNext(-1);
+            //noinspection unchecked
+            inOrder.verify(subscriber, times(1)).onNext(+0);
+            //noinspection unchecked
+            inOrder.verify(subscriber, times(1)).onNext(+1);
+        }
+
+        @Test
+        public void call_subscriber_onNext_once_for_each_subscriber_in_subscription_order_when_request_count_allow_it() {
+            final var subscriberOne = mock(Flow.Subscriber.class);
+            final var subscriberTwo = mock(Flow.Subscriber.class);
+            final var inOrder = inOrder(subscriberOne, subscriberTwo);
+            final var publisher = new Single<>(publish -> this.publish = publish);
+            final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
+            //noinspection unchecked
+            publisher.subscribe(subscriberOne);
+            //noinspection unchecked
+            publisher.subscribe(subscriberTwo);
+            verify(subscriberOne, times(1)).onSubscribe(subscriptionArgumentCaptor.capture());
+            subscriptionArgumentCaptor.getValue().request(1);
+            verify(subscriberTwo, times(1)).onSubscribe(subscriptionArgumentCaptor.capture());
+            subscriptionArgumentCaptor.getValue().request(1);
+            publish.accept(new Signal.Value<>(-1));
+            //noinspection unchecked
+            inOrder.verify(subscriberOne, times(1)).onNext(-1);
+            //noinspection unchecked
+            inOrder.verify(subscriberTwo, times(1)).onNext(-1);
+        }
+
+        @Test
+        public void do_not_call_subscriber_onError_even_when_request_count_allows_it() {
+            final var subscriber = mock(Flow.Subscriber.class);
+            final var publisher = new Single<>(publish -> this.publish = publish);
+            final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
+            //noinspection unchecked
+            publisher.subscribe(subscriber);
+            verify(subscriber, times(1)).onSubscribe(subscriptionArgumentCaptor.capture());
+            subscriptionArgumentCaptor.getValue().request(1);
+            publish.accept(new Signal.Value<>(-1));
+            verify(subscriber, times(0)).onError(any());
+        }
+
+        @Test
+        public void do_not_call_subscriber_onComplete_even_when_request_count_allows_it() {
+            final var subscriber = mock(Flow.Subscriber.class);
+            final var publisher = new Single<>(publish -> this.publish = publish);
+            final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
+            //noinspection unchecked
+            publisher.subscribe(subscriber);
+            verify(subscriber, times(1)).onSubscribe(subscriptionArgumentCaptor.capture());
+            subscriptionArgumentCaptor.getValue().request(1);
+            publish.accept(new Signal.Value<>(-1));
+            verify(subscriber, times(0)).onComplete();
+        }
+    }
 }

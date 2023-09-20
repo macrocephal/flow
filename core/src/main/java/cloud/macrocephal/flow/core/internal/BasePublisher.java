@@ -3,14 +3,14 @@ package cloud.macrocephal.flow.core.internal;
 import cloud.macrocephal.flow.core.Signal;
 
 import java.math.BigInteger;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Flow;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 
 public class BasePublisher<T> implements Flow.Publisher<T> {
+    private final List<Map.Entry<T, Set<Flow.Subscriber<? super T>>>> valueTracks = new LinkedList<>();
     private final Map<Flow.Subscriber<? super T>, BigInteger> subscriberCount = new LinkedHashMap<>();
     private volatile boolean opened = true;
 
@@ -28,6 +28,7 @@ public class BasePublisher<T> implements Flow.Publisher<T> {
                     @Override
                     public void request(long n) {
                         BasePublisher.this.request(subscriber, n);
+                        dispatch(subscriber);
                     }
 
                     @Override
@@ -39,6 +40,34 @@ public class BasePublisher<T> implements Flow.Publisher<T> {
                 return BigInteger.ZERO;
             });
         }
+    }
+
+    synchronized private void dispatch(Flow.Subscriber<? super T> subscriber, BigInteger count) {
+        if (opened) {
+            Map.Entry<T, Set<Flow.Subscriber<? super T>>> next;
+            Set<Flow.Subscriber<? super T>> subscribers;
+            final var iterator = valueTracks.iterator();
+
+            while (BigInteger.ZERO.compareTo(count) < 0 && iterator.hasNext()) {
+                next = iterator.next();
+                subscribers = next.getValue();
+
+                if (subscribers.remove(subscriber)) {
+                    count = count.subtract(BigInteger.ONE);
+                    subscriber.onNext(next.getKey());
+
+                    if (subscribers.isEmpty()) {
+                        iterator.remove();
+                    }
+                }
+            }
+
+            subscriberCount.put(subscriber, count);
+        }
+    }
+
+    synchronized private void dispatch(Flow.Subscriber<? super T> subscriber) {
+        dispatch(subscriber, subscriberCount.getOrDefault(subscriber, BigInteger.ZERO));
     }
 
     synchronized private void request(Flow.Subscriber<? super T> subscriber, long n) {
@@ -61,12 +90,14 @@ public class BasePublisher<T> implements Flow.Publisher<T> {
                     subscriberCount.clear();
                     opened = false;
                 }
+                case Signal.Value<T>(final var value) -> {
+                    valueTracks.add(new AbstractMap.SimpleEntry<>(value, new HashSet<>(subscriberCount.keySet())));
+                    subscriberCount.forEach(this::dispatch);
+                }
                 case Signal.Error<T>(final var throwable) -> {
                     subscriberCount.forEach((subscriber, ignored) -> subscriber.onError(throwable));
                     subscriberCount.clear();
                     opened = false;
-                }
-                default -> {
                 }
             }
         }
