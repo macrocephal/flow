@@ -1,6 +1,7 @@
 package cloud.macrocephal.flow.core.internal;
 
 import cloud.macrocephal.flow.core.Signal;
+import cloud.macrocephal.flow.core.exception.BackPressureException;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -9,15 +10,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.Flow.defaultBufferSize;
 
 public class BasePublisher<T> implements Flow.Publisher<T> {
     private final List<Map.Entry<Signal<T>, Set<Flow.Subscriber<? super T>>>> valueTracks = new LinkedList<>();
     private final Map<Flow.Subscriber<? super T>, BigInteger> subscriberCount = new LinkedHashMap<>();
     private volatile boolean opened = true;
+    // FIXME: This capacity has room for ...values + error/complete, b/c Java collection size is int.
+    //        We want capacity to mean what it says: number of ...values and nothing more.
+    //        The issue really gets tricky with Integer.MAX_VALUE as capacity
+    private final int capacity;
 
-    protected BasePublisher(Consumer<Consumer<Signal<T>>> publishExposure) {
+    protected BasePublisher(Consumer<Consumer<Signal<T>>> publishExposure, int capacity) {
         requireNonNull(publishExposure);
         publishExposure.accept(this::publish);
+        this.capacity = capacity < Integer.MAX_VALUE ? capacity + 1 : capacity;
+    }
+
+    protected BasePublisher(Consumer<Consumer<Signal<T>>> publishExposure) {
+        this(publishExposure, defaultBufferSize());
     }
 
     @Override
@@ -91,12 +102,18 @@ public class BasePublisher<T> implements Flow.Publisher<T> {
         if (opened) {
             requireNonNull(signal);
 
-            if (signal instanceof Signal.Complete<T> || signal instanceof Signal.Error<T>) {
-                opened = false;
-            }
+            opened = signal instanceof Signal.Value<T>;
 
-            valueTracks.add(new AbstractMap.SimpleEntry<>(signal, new HashSet<>(subscriberCount.keySet())));
-            new LinkedHashSet<>(subscriberCount.keySet()).forEach(this::dispatch);
+            if (capacity > valueTracks.size()) {
+                valueTracks.add(new AbstractMap.SimpleEntry<>(signal, new HashSet<>(subscriberCount.keySet())));
+                new LinkedHashSet<>(subscriberCount.keySet()).forEach(this::dispatch);
+            } else {
+                // FIXME: If there is no room in the buffer, what on earth is this going to achieve?
+                //        And we do not want to rush lagging subscribers...
+                //        Are we okay dropping last value for this one?
+                //        Or should rather supersede ordering and push one last one?
+                publish(new Signal.Error<>(new BackPressureException(this, capacity)));
+            }
         }
     }
 }
