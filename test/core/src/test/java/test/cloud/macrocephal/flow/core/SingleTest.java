@@ -295,7 +295,7 @@ public class SingleTest {
         }
 
         @Test
-        public void call_subscriber_onNext_once_as_much_as_request_count_allow_it() {
+        public void call_subscriber_onNext_once_as_much_as_request_count_allow_it_up_to_once() {
             final var subscriber = mock(Flow.Subscriber.class);
             final var inOrder = inOrder(subscriber);
             final var publisher = new Single<>(publish -> this.publish = publish);
@@ -309,13 +309,15 @@ public class SingleTest {
             publish.accept(new Signal.Value<>(+1));
             publish.accept(new Signal.Value<>(+2));
             //noinspection unchecked
-            verify(subscriber, times(3)).onNext(any());
+            verify(subscriber, times(1)).onNext(any());
             //noinspection unchecked
             inOrder.verify(subscriber, times(1)).onNext(-1);
             //noinspection unchecked
-            inOrder.verify(subscriber, times(1)).onNext(+0);
+            inOrder.verify(subscriber, times(0)).onNext(+0);
             //noinspection unchecked
-            inOrder.verify(subscriber, times(1)).onNext(+1);
+            inOrder.verify(subscriber, times(0)).onNext(+1);
+            inOrder.verify(subscriber, times(0)).onError(any());
+            inOrder.verify(subscriber, times(1)).onComplete();
         }
 
         @Test
@@ -354,7 +356,7 @@ public class SingleTest {
         }
 
         @Test
-        public void do_not_call_subscriber_onComplete_even_when_request_count_allows_it() {
+        public void call_subscriber_onComplete_when_request_count_allows_it() {
             final var subscriber = mock(Flow.Subscriber.class);
             final var publisher = new Single<>(publish -> this.publish = publish);
             final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
@@ -363,7 +365,7 @@ public class SingleTest {
             verify(subscriber, times(1)).onSubscribe(subscriptionArgumentCaptor.capture());
             subscriptionArgumentCaptor.getValue().request(1);
             publish.accept(new Signal.Value<>(-1));
-            verify(subscriber, times(0)).onComplete();
+            verify(subscriber, times(1)).onComplete();
         }
     }
 
@@ -388,7 +390,7 @@ public class SingleTest {
         }
 
         @Test
-        public void trigger_subscriber_onNext_if_there_were_pending_values_for_as_mush_as_possible() {
+        public void trigger_subscriber_onNext_if_there_were_pending_values_for_as_mush_as_once() {
             final var subscriber = mock(Flow.Subscriber.class);
             final var inOrder = inOrder(subscriber);
             final var publisher = new Single<>(publish -> this.publish = publish);
@@ -404,13 +406,15 @@ public class SingleTest {
             verify(subscriber, times(0)).onNext(any());
             subscriptionArgumentCaptor.getValue().request(3);
             //noinspection unchecked
-            verify(subscriber, times(3)).onNext(any());
+            verify(subscriber, times(1)).onNext(any());
             //noinspection unchecked
             inOrder.verify(subscriber, times(1)).onNext(-1);
             //noinspection unchecked
-            inOrder.verify(subscriber, times(1)).onNext(+0);
+            inOrder.verify(subscriber, times(0)).onNext(+0);
             //noinspection unchecked
-            inOrder.verify(subscriber, times(1)).onNext(+1);
+            inOrder.verify(subscriber, times(0)).onNext(+1);
+            inOrder.verify(subscriber, times(0)).onError(any());
+            inOrder.verify(subscriber, times(1)).onComplete();
         }
 
         @Test
@@ -447,11 +451,12 @@ public class SingleTest {
             //noinspection unchecked
             inOrder.verify(subscriber, times(1)).onNext(-1);
             //noinspection unchecked
-            inOrder.verify(subscriber, times(1)).onNext(+0);
+            inOrder.verify(subscriber, times(0)).onNext(+0);
             //noinspection unchecked
-            inOrder.verify(subscriber, times(1)).onNext(+1);
+            inOrder.verify(subscriber, times(0)).onNext(+1);
             //noinspection unchecked
-            inOrder.verify(subscriber, times(1)).onNext(+2);
+            inOrder.verify(subscriber, times(0)).onNext(+2);
+            inOrder.verify(subscriber, times(0)).onError(any());
             inOrder.verify(subscriber, times(1)).onComplete();
         }
 
@@ -501,10 +506,10 @@ public class SingleTest {
             subscriptionTwoArgumentCaptor.getValue().request(1);
             //noinspection unchecked
             inOrder.verify(subscriberOne, times(1)).onNext("Passion Fruit");
-            inOrder.verify(subscriberOne, times(1)).onError(throwable);
+            inOrder.verify(subscriberOne, times(0)).onError(throwable);
             //noinspection unchecked
             inOrder.verify(subscriberTwo, times(1)).onNext("Passion Fruit");
-            inOrder.verify(subscriberTwo, times(1)).onError(throwable);
+            inOrder.verify(subscriberTwo, times(0)).onError(throwable);
         }
 
         @Test
