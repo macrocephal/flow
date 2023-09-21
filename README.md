@@ -77,6 +77,6 @@ TODO
 
 ## License
 
-MIT License
+[MIT License](./LICENSE)
 
 Copyright (c) 2023 Macrocephal Corp.
