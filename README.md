@@ -67,7 +67,7 @@ publish.accept(randomUUID());
   + [ ] R2DBC
   + [ ] RabbitMQ
   + [ ] Apache Kafka
-+ Validation
++ [ ] Validation
   + [ ] Hibernate Validator
 + [ ] Web Module
 
