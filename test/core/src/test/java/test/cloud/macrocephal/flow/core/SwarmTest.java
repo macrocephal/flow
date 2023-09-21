@@ -1,6 +1,7 @@
 package test.cloud.macrocephal.flow.core;
 
 import cloud.macrocephal.flow.core.Signal;
+import cloud.macrocephal.flow.core.Single;
 import cloud.macrocephal.flow.core.Swarm;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -428,8 +429,9 @@ public class SwarmTest {
         }
 
         @Test
-        public void ignored_when_publisher_is_completed() {
+        public void not_ignored_when_publisher_complete_but_there_are_pending_values() {
             final var subscriber = mock(Flow.Subscriber.class);
+            final var inOrder = inOrder(subscriber);
             final var publisher = new Swarm<>(publish -> this.publish = publish);
             final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
             //noinspection unchecked
@@ -442,9 +444,16 @@ public class SwarmTest {
             publish.accept(new Signal.Complete<>());
             //noinspection unchecked
             verify(subscriber, times(0)).onNext(any());
-            subscriptionArgumentCaptor.getValue().request(3);
+            subscriptionArgumentCaptor.getValue().request(4);
             //noinspection unchecked
-            verify(subscriber, times(0)).onNext(any());
+            inOrder.verify(subscriber, times(1)).onNext(-1);
+            //noinspection unchecked
+            inOrder.verify(subscriber, times(1)).onNext(+0);
+            //noinspection unchecked
+            inOrder.verify(subscriber, times(1)).onNext(+1);
+            //noinspection unchecked
+            inOrder.verify(subscriber, times(1)).onNext(+2);
+            inOrder.verify(subscriber, times(1)).onComplete();
         }
 
         @Test
@@ -465,6 +474,64 @@ public class SwarmTest {
             subscriptionArgumentCaptor.getValue().request(3);
             //noinspection unchecked
             verify(subscriber, times(0)).onNext(any());
+        }
+    }
+
+    @Nested
+    class Miscellaneous {
+        private Consumer<Signal<Object>> publish;
+
+        @Test
+        public void publishing_error_do_not_rush_lagging_subscribers_to_error() {
+            final var throwable = mock(Throwable.class);
+            final var subscriberOne = mock(Flow.Subscriber.class);
+            final var subscriberTwo = mock(Flow.Subscriber.class);
+            final var inOrder = inOrder(subscriberOne, subscriberTwo);
+            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var subscriptionOneArgumentCaptor = forClass(Flow.Subscription.class);
+            final var subscriptionTwoArgumentCaptor = forClass(Flow.Subscription.class);
+            //noinspection unchecked
+            publisher.subscribe(subscriberOne);
+            //noinspection unchecked
+            publisher.subscribe(subscriberTwo);
+            verify(subscriberOne).onSubscribe(subscriptionOneArgumentCaptor.capture());
+            verify(subscriberTwo).onSubscribe(subscriptionTwoArgumentCaptor.capture());
+            subscriptionOneArgumentCaptor.getValue().request(1);
+            publish.accept(new Signal.Value<>("Passion Fruit"));
+            publish.accept(new Signal.Error<>(throwable));
+            subscriptionTwoArgumentCaptor.getValue().request(1);
+            //noinspection unchecked
+            inOrder.verify(subscriberOne, times(1)).onNext("Passion Fruit");
+            inOrder.verify(subscriberOne, times(1)).onError(throwable);
+            //noinspection unchecked
+            inOrder.verify(subscriberTwo, times(1)).onNext("Passion Fruit");
+            inOrder.verify(subscriberTwo, times(1)).onError(throwable);
+        }
+
+        @Test
+        public void publishing_complete_do_not_rush_lagging_subscribers_to_completion() {
+            final var subscriberOne = mock(Flow.Subscriber.class);
+            final var subscriberTwo = mock(Flow.Subscriber.class);
+            final var inOrder = inOrder(subscriberOne, subscriberTwo);
+            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var subscriptionOneArgumentCaptor = forClass(Flow.Subscription.class);
+            final var subscriptionTwoArgumentCaptor = forClass(Flow.Subscription.class);
+            //noinspection unchecked
+            publisher.subscribe(subscriberOne);
+            //noinspection unchecked
+            publisher.subscribe(subscriberTwo);
+            verify(subscriberOne).onSubscribe(subscriptionOneArgumentCaptor.capture());
+            verify(subscriberTwo).onSubscribe(subscriptionTwoArgumentCaptor.capture());
+            subscriptionOneArgumentCaptor.getValue().request(1);
+            publish.accept(new Signal.Value<>("Passion Fruit"));
+            publish.accept(new Signal.Complete<>());
+            subscriptionTwoArgumentCaptor.getValue().request(1);
+            //noinspection unchecked
+            inOrder.verify(subscriberOne, times(1)).onNext("Passion Fruit");
+            inOrder.verify(subscriberOne, times(1)).onComplete();
+            //noinspection unchecked
+            inOrder.verify(subscriberTwo, times(1)).onNext("Passion Fruit");
+            inOrder.verify(subscriberTwo, times(1)).onComplete();
         }
     }
 }

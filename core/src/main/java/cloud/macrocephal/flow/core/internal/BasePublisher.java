@@ -5,12 +5,13 @@ import cloud.macrocephal.flow.core.Signal;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.Flow;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 
 public class BasePublisher<T> implements Flow.Publisher<T> {
-    private final List<Map.Entry<T, Set<Flow.Subscriber<? super T>>>> valueTracks = new LinkedList<>();
+    private final List<Map.Entry<Signal<T>, Set<Flow.Subscriber<? super T>>>> valueTracks = new LinkedList<>();
     private final Map<Flow.Subscriber<? super T>, BigInteger> subscriberCount = new LinkedHashMap<>();
     private volatile boolean opened = true;
 
@@ -42,64 +43,60 @@ public class BasePublisher<T> implements Flow.Publisher<T> {
         }
     }
 
-    synchronized private void dispatch(Flow.Subscriber<? super T> subscriber, BigInteger count) {
-        if (opened) {
-            Map.Entry<T, Set<Flow.Subscriber<? super T>>> next;
-            Set<Flow.Subscriber<? super T>> subscribers;
-            final var iterator = valueTracks.iterator();
+    synchronized private void dispatch(Flow.Subscriber<? super T> subscriber) {
+        final var overstepped = new AtomicBoolean(false);
+        valueTracks.removeIf(entry -> {
+            if (entry.getValue().contains(subscriber)) {
+                switch (entry.getKey()) {
+                    case Signal.Value<T>(final var value) when !overstepped.get() -> {
+                        final var counter = subscriberCount.get(subscriber);
 
-            while (BigInteger.ZERO.compareTo(count) < 0 && iterator.hasNext()) {
-                next = iterator.next();
-                subscribers = next.getValue();
-
-                if (subscribers.remove(subscriber)) {
-                    count = count.subtract(BigInteger.ONE);
-                    subscriber.onNext(next.getKey());
-
-                    if (subscribers.isEmpty()) {
-                        iterator.remove();
+                        if (0 > BigInteger.ZERO.compareTo(counter)) {
+                            subscriberCount.put(subscriber, counter.subtract(BigInteger.ONE));
+                            entry.getValue().remove(subscriber);
+                            subscriber.onNext(value);
+                        } else {
+                            overstepped.set(true);
+                        }
+                    }
+                    case Signal.Complete() when !overstepped.get() -> {
+                        entry.getValue().remove(subscriber);
+                        subscriberCount.remove(subscriber);
+                        subscriber.onComplete();
+                    }
+                    case Signal.Error<T>(final var throwable) when !overstepped.get() -> {
+                        entry.getValue().remove(subscriber);
+                        subscriberCount.remove(subscriber);
+                        subscriber.onError(throwable);
+                    }
+                    default -> {
                     }
                 }
             }
-
-            subscriberCount.put(subscriber, count);
-        }
-    }
-
-    synchronized private void dispatch(Flow.Subscriber<? super T> subscriber) {
-        dispatch(subscriber, subscriberCount.getOrDefault(subscriber, BigInteger.ZERO));
+            return entry.getValue().isEmpty();
+        });
     }
 
     synchronized private void request(Flow.Subscriber<? super T> subscriber, long n) {
-        if (opened) {
-            subscriberCount.computeIfPresent(subscriber, (ignored, counter) ->
-                    counter.add(BigInteger.valueOf(Math.max(0L, n))));
-        }
+        subscriberCount.computeIfPresent(subscriber, (ignored, counter) ->
+                counter.add(BigInteger.valueOf(Math.max(0L, n))));
     }
 
     synchronized private void cancel(Flow.Subscriber<? super T> subscriber) {
+        valueTracks.removeIf(entry -> entry.getValue().remove(subscriber) && entry.getValue().isEmpty());
         subscriberCount.remove(subscriber);
     }
 
     synchronized private void publish(Signal<T> signal) {
         if (opened) {
             requireNonNull(signal);
-            switch (signal) {
-                case Signal.Complete() -> {
-                    subscriberCount.forEach((subscriber, ignored) -> subscriber.onComplete());
-                    subscriberCount.clear();
-                    opened = false;
-                }
-                case Signal.Value<T>(final var value) -> {
-                    valueTracks.add(new AbstractMap.SimpleEntry<>(value, new HashSet<>(subscriberCount.keySet())));
-                    subscriberCount.forEach(this::dispatch);
-                }
-                case Signal.Error<T>(final var throwable) -> {
-                    subscriberCount.forEach((subscriber, ignored) -> subscriber.onError(throwable));
-                    subscriberCount.clear();
-                    opened = false;
-                }
+
+            if (signal instanceof Signal.Complete<T> || signal instanceof Signal.Error<T>) {
+                opened = false;
             }
+
+            valueTracks.add(new AbstractMap.SimpleEntry<>(signal, new HashSet<>(subscriberCount.keySet())));
+            new LinkedHashSet<>(subscriberCount.keySet()).forEach(this::dispatch);
         }
     }
 }
