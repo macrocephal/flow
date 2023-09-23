@@ -21,8 +21,8 @@ The java Flow API defines them so let's focus on the specifics of **Flow**:
 
 Usage:
 ```java
-import cloud.macrocephal.flow.core.Single;
-import cloud.macrocephal.flow.core.Swarm;
+import cloud.macrocephal.flow.core.OldSingle;
+import cloud.macrocephal.flow.core.OldSwarm;
 
 import static java.util.UUID.randomUUID;
 import static cloud.macrocephal.flow.core.operator.Operator.map;
@@ -37,7 +37,7 @@ Single.from(randomUUID())                       // [1] Create a Single of UUID
 
 More control:
 ```java
-import cloud.macrocephal.flow.core.Swarm;
+import cloud.macrocephal.flow.core.OldSwarm;
 import cloud.macrocephal.flow.core.Signal;
 
 import static java.util.UUID.randomUUID;
