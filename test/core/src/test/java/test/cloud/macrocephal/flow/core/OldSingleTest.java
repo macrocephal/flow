@@ -1,8 +1,7 @@
 package test.cloud.macrocephal.flow.core;
 
+import cloud.macrocephal.flow.core.OldSingle;
 import cloud.macrocephal.flow.core.Signal;
-import cloud.macrocephal.flow.core.Single;
-import cloud.macrocephal.flow.core.Swarm;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -18,16 +17,16 @@ import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class SwarmTest {
+public class OldSingleTest {
     @Test
     public void throw_when_constructor_with_publishExposure_is_invoked_with_null() {
-        assertThrows(NullPointerException.class, () -> new Swarm<>(null));
+        assertThrows(NullPointerException.class, () -> new OldSingle<>(null));
     }
 
     @Test
     public void call_publishExposure_when_constructor_with_publishExposure_is_invoked() {
         @SuppressWarnings("unchecked") final Consumer<Consumer<Signal<UUID>>> publishExposure = mock(Consumer.class);
-        new Swarm<>(publishExposure);
+        new OldSingle<>(publishExposure);
         //noinspection unchecked
         verify(publishExposure).accept(any(Consumer.class));
     }
@@ -35,65 +34,65 @@ public class SwarmTest {
     @Test
     public void call_once_publishExposure_when_constructor_with_publishExposure_is_invoked() {
         @SuppressWarnings("unchecked") final Consumer<Consumer<Signal<UUID>>> publishExposure = mock(Consumer.class);
-        new Swarm<>(publishExposure);
+        new OldSingle<>(publishExposure);
         //noinspection unchecked
         verify(publishExposure, times(1)).accept(any(Consumer.class));
     }
 
     @Test
     public void throw_when_publisher_subscribe_method_is_invoked_with_null() {
-        assertThrows(NullPointerException.class, () -> new Swarm<>(Function.identity()::apply).subscribe(null));
+        assertThrows(NullPointerException.class, () -> new OldSingle<>(Function.identity()::apply).subscribe(null));
     }
 
     @Test
     public void subscriber_onSubscribe_is_invoked_with_subscription_when_subscribed_to_publisher() {
         final var subscriber = mock(Flow.Subscriber.class);
         //noinspection unchecked
-        new Swarm<>(Function.identity()::apply).subscribe(subscriber);
+        new OldSingle<>(Function.identity()::apply).subscribe(subscriber);
         verify(subscriber).onSubscribe(any(Flow.Subscription.class));
     }
 
     @Test
     public void subscriber_onSubscribe_is_invoked_with_subscription_when_subscribed_to_publisher_only_first_time() {
         final var subscriber = mock(Flow.Subscriber.class);
-        final var swarm = new Swarm<>(Function.identity()::apply);
+        final var single = new OldSingle<>(Function.identity()::apply);
         //noinspection unchecked
-        swarm.subscribe(subscriber);
+        single.subscribe(subscriber);
         verify(subscriber, times(1)).onSubscribe(any(Flow.Subscription.class));
         //noinspection unchecked
-        swarm.subscribe(subscriber);
+        single.subscribe(subscriber);
         verify(subscriber, times(1)).onSubscribe(any(Flow.Subscription.class));
     }
 
     @Test
     public void calling_cancel_on_subscription_remove_the_associated_subscriber_from_publisher() {
         final var subscriber = mock(Flow.Subscriber.class);
-        final var swarm = new Swarm<>(Function.identity()::apply);
+        final var single = new OldSingle<>(Function.identity()::apply);
         final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
         //noinspection unchecked
-        swarm.subscribe(subscriber);
+        single.subscribe(subscriber);
         verify(subscriber, times(1)).onSubscribe(subscriptionArgumentCaptor.capture());
 
         final var subscription = subscriptionArgumentCaptor.getValue();
         subscription.cancel();
         //noinspection unchecked
-        swarm.subscribe(subscriber);
+        single.subscribe(subscriber);
         verify(subscriber, times(2)).onSubscribe(any(Flow.Subscription.class));
     }
 
     @Test
     public void reused_subscriber_receive_different_subscription() {
         final var subscriber = mock(Flow.Subscriber.class);
-        final var swarm = new Swarm<>(Function.identity()::apply);
+        final var single = new OldSingle<>(Function.identity()::apply);
         final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
         //noinspection unchecked
-        swarm.subscribe(subscriber);
+        single.subscribe(subscriber);
         verify(subscriber, times(1)).onSubscribe(subscriptionArgumentCaptor.capture());
 
         final var subscription = subscriptionArgumentCaptor.getValue();
         subscription.cancel();
         //noinspection unchecked
-        swarm.subscribe(subscriber);
+        single.subscribe(subscriber);
         verify(subscriber, times(2)).onSubscribe(subscriptionArgumentCaptor.capture());
         assertThat(subscription).isNotEqualTo(subscriptionArgumentCaptor.getValue());
     }
@@ -104,7 +103,7 @@ public class SwarmTest {
 
         @Test
         public void throw_NPE() {
-            new Swarm<>(publish -> this.publish = publish);
+            new OldSingle<>(publish -> this.publish = publish);
             assertThrows(NullPointerException.class, () -> publish.accept(null));
         }
     }
@@ -117,7 +116,7 @@ public class SwarmTest {
         public void run_onComplete_for_each_subscriber() {
             final var subscriberOne = mock(Flow.Subscriber.class);
             final var subscriberTwo = mock(Flow.Subscriber.class);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             //noinspection unchecked
             publisher.subscribe(subscriberOne);
             //noinspection unchecked
@@ -131,7 +130,7 @@ public class SwarmTest {
         public void run_onComplete_once_for_each_subscriber() {
             final var subscriberOne = mock(Flow.Subscriber.class);
             final var subscriberTwo = mock(Flow.Subscriber.class);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             //noinspection unchecked
             publisher.subscribe(subscriberOne);
             //noinspection unchecked
@@ -146,7 +145,7 @@ public class SwarmTest {
             final var subscriberOne = mock(Flow.Subscriber.class);
             final var subscriberTwo = mock(Flow.Subscriber.class);
             final var inOrder = inOrder(subscriberOne, subscriberTwo);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             //noinspection unchecked
             publisher.subscribe(subscriberOne);
             //noinspection unchecked
@@ -159,7 +158,7 @@ public class SwarmTest {
         @Test
         public void cause_further_calls_to_publish_to_be_ignored() {
             final var subscriberOne = mock(Flow.Subscriber.class);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             //noinspection unchecked
             publisher.subscribe(subscriberOne);
             publish.accept(new Signal.Complete<>());
@@ -169,7 +168,7 @@ public class SwarmTest {
         @Test
         public void cause_further_calls_to_subscribe_to_be_ignored() {
             final var subscriberOne = mock(Flow.Subscriber.class);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             //noinspection unchecked
             publisher.subscribe(subscriberOne);
             publish.accept(new Signal.Complete<>());
@@ -188,7 +187,7 @@ public class SwarmTest {
             final var throwable = mock(Throwable.class);
             final var subscriberOne = mock(Flow.Subscriber.class);
             final var subscriberTwo = mock(Flow.Subscriber.class);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             //noinspection unchecked
             publisher.subscribe(subscriberOne);
             //noinspection unchecked
@@ -203,7 +202,7 @@ public class SwarmTest {
             final var throwable = mock(Throwable.class);
             final var subscriberOne = mock(Flow.Subscriber.class);
             final var subscriberTwo = mock(Flow.Subscriber.class);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             //noinspection unchecked
             publisher.subscribe(subscriberOne);
             //noinspection unchecked
@@ -219,7 +218,7 @@ public class SwarmTest {
             final var subscriberOne = mock(Flow.Subscriber.class);
             final var subscriberTwo = mock(Flow.Subscriber.class);
             final var inOrder = inOrder(subscriberOne, subscriberTwo);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             //noinspection unchecked
             publisher.subscribe(subscriberOne);
             //noinspection unchecked
@@ -232,7 +231,7 @@ public class SwarmTest {
         @Test
         public void cause_further_calls_to_publish_to_be_ignored() {
             final var subscriberOne = mock(Flow.Subscriber.class);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             //noinspection unchecked
             publisher.subscribe(subscriberOne);
             publish.accept(new Signal.Error<>(mock(Throwable.class)));
@@ -242,7 +241,7 @@ public class SwarmTest {
         @Test
         public void cause_further_calls_to_subscribe_to_be_ignored() {
             final var subscriberOne = mock(Flow.Subscriber.class);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             //noinspection unchecked
             publisher.subscribe(subscriberOne);
             publish.accept(new Signal.Error<>(mock(Throwable.class)));
@@ -259,7 +258,7 @@ public class SwarmTest {
         @Test
         public void do_not_call_subscriber_onNext() {
             final var subscriber = mock(Flow.Subscriber.class);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             //noinspection unchecked
             publisher.subscribe(subscriber);
             publish.accept(new Signal.Value<>(0));
@@ -268,9 +267,9 @@ public class SwarmTest {
         }
 
         @Test
-        public void call_subscriber_onNext_when_request_count_allow_it() {
+        public void call_subscriber_onNext_when_request_count_allows_it() {
             final var subscriber = mock(Flow.Subscriber.class);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
             //noinspection unchecked
             publisher.subscribe(subscriber);
@@ -284,7 +283,7 @@ public class SwarmTest {
         @Test
         public void call_subscriber_onNext_once_when_request_count_allow_it() {
             final var subscriber = mock(Flow.Subscriber.class);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
             //noinspection unchecked
             publisher.subscribe(subscriber);
@@ -296,10 +295,10 @@ public class SwarmTest {
         }
 
         @Test
-        public void call_subscriber_onNext_once_as_much_as_request_count_allow_it() {
+        public void call_subscriber_onNext_once_as_much_as_request_count_allow_it_up_to_once() {
             final var subscriber = mock(Flow.Subscriber.class);
             final var inOrder = inOrder(subscriber);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
             //noinspection unchecked
             publisher.subscribe(subscriber);
@@ -310,21 +309,23 @@ public class SwarmTest {
             publish.accept(new Signal.Value<>(+1));
             publish.accept(new Signal.Value<>(+2));
             //noinspection unchecked
-            verify(subscriber, times(3)).onNext(any());
+            verify(subscriber, times(1)).onNext(any());
             //noinspection unchecked
             inOrder.verify(subscriber, times(1)).onNext(-1);
             //noinspection unchecked
-            inOrder.verify(subscriber, times(1)).onNext(+0);
+            inOrder.verify(subscriber, times(0)).onNext(+0);
             //noinspection unchecked
-            inOrder.verify(subscriber, times(1)).onNext(+1);
+            inOrder.verify(subscriber, times(0)).onNext(+1);
+            inOrder.verify(subscriber, times(0)).onError(any());
+            inOrder.verify(subscriber, times(1)).onComplete();
         }
 
         @Test
-        public void call_subscriber_onNext_once_for_each_subscriber_in_subscription_order_when_request_count_allows_it() {
+        public void call_subscriber_onNext_once_for_each_subscriber_in_subscription_order_when_request_count_allow_it() {
             final var subscriberOne = mock(Flow.Subscriber.class);
             final var subscriberTwo = mock(Flow.Subscriber.class);
             final var inOrder = inOrder(subscriberOne, subscriberTwo);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
             //noinspection unchecked
             publisher.subscribe(subscriberOne);
@@ -344,7 +345,7 @@ public class SwarmTest {
         @Test
         public void do_not_call_subscriber_onError_even_when_request_count_allows_it() {
             final var subscriber = mock(Flow.Subscriber.class);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
             //noinspection unchecked
             publisher.subscribe(subscriber);
@@ -355,16 +356,16 @@ public class SwarmTest {
         }
 
         @Test
-        public void do_not_call_subscriber_onComplete_even_when_request_count_allows_it() {
+        public void call_subscriber_onComplete_when_request_count_allows_it() {
             final var subscriber = mock(Flow.Subscriber.class);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
             //noinspection unchecked
             publisher.subscribe(subscriber);
             verify(subscriber, times(1)).onSubscribe(subscriptionArgumentCaptor.capture());
             subscriptionArgumentCaptor.getValue().request(1);
             publish.accept(new Signal.Value<>(-1));
-            verify(subscriber, times(0)).onComplete();
+            verify(subscriber, times(1)).onComplete();
         }
     }
 
@@ -375,7 +376,7 @@ public class SwarmTest {
         @Test
         public void trigger_subscriber_onNext_if_there_were_pending_values() {
             final var subscriber = mock(Flow.Subscriber.class);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
             //noinspection unchecked
             publisher.subscribe(subscriber);
@@ -389,10 +390,10 @@ public class SwarmTest {
         }
 
         @Test
-        public void trigger_subscriber_onNext_if_there_were_pending_values_for_as_mush_as_possible() {
+        public void trigger_subscriber_onNext_if_there_were_pending_values_for_as_mush_as_once() {
             final var subscriber = mock(Flow.Subscriber.class);
             final var inOrder = inOrder(subscriber);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
             //noinspection unchecked
             publisher.subscribe(subscriber);
@@ -405,19 +406,21 @@ public class SwarmTest {
             verify(subscriber, times(0)).onNext(any());
             subscriptionArgumentCaptor.getValue().request(3);
             //noinspection unchecked
-            verify(subscriber, times(3)).onNext(any());
+            verify(subscriber, times(1)).onNext(any());
             //noinspection unchecked
             inOrder.verify(subscriber, times(1)).onNext(-1);
             //noinspection unchecked
-            inOrder.verify(subscriber, times(1)).onNext(+0);
+            inOrder.verify(subscriber, times(0)).onNext(+0);
             //noinspection unchecked
-            inOrder.verify(subscriber, times(1)).onNext(+1);
+            inOrder.verify(subscriber, times(0)).onNext(+1);
+            inOrder.verify(subscriber, times(0)).onError(any());
+            inOrder.verify(subscriber, times(1)).onComplete();
         }
 
         @Test
         public void negative_count_does_not_matter() {
             final var subscriber = mock(Flow.Subscriber.class);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
             //noinspection unchecked
             publisher.subscribe(subscriber);
@@ -432,7 +435,7 @@ public class SwarmTest {
         public void not_ignored_when_publisher_complete_but_there_are_pending_values() {
             final var subscriber = mock(Flow.Subscriber.class);
             final var inOrder = inOrder(subscriber);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
             //noinspection unchecked
             publisher.subscribe(subscriber);
@@ -448,18 +451,19 @@ public class SwarmTest {
             //noinspection unchecked
             inOrder.verify(subscriber, times(1)).onNext(-1);
             //noinspection unchecked
-            inOrder.verify(subscriber, times(1)).onNext(+0);
+            inOrder.verify(subscriber, times(0)).onNext(+0);
             //noinspection unchecked
-            inOrder.verify(subscriber, times(1)).onNext(+1);
+            inOrder.verify(subscriber, times(0)).onNext(+1);
             //noinspection unchecked
-            inOrder.verify(subscriber, times(1)).onNext(+2);
+            inOrder.verify(subscriber, times(0)).onNext(+2);
+            inOrder.verify(subscriber, times(0)).onError(any());
             inOrder.verify(subscriber, times(1)).onComplete();
         }
 
         @Test
         public void ignored_when_subscription_is_cancelled() {
             final var subscriber = mock(Flow.Subscriber.class);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             final var subscriptionArgumentCaptor = forClass(Flow.Subscription.class);
             //noinspection unchecked
             publisher.subscribe(subscriber);
@@ -487,7 +491,7 @@ public class SwarmTest {
             final var subscriberOne = mock(Flow.Subscriber.class);
             final var subscriberTwo = mock(Flow.Subscriber.class);
             final var inOrder = inOrder(subscriberOne, subscriberTwo);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             final var subscriptionOneArgumentCaptor = forClass(Flow.Subscription.class);
             final var subscriptionTwoArgumentCaptor = forClass(Flow.Subscription.class);
             //noinspection unchecked
@@ -502,10 +506,10 @@ public class SwarmTest {
             subscriptionTwoArgumentCaptor.getValue().request(1);
             //noinspection unchecked
             inOrder.verify(subscriberOne, times(1)).onNext("Passion Fruit");
-            inOrder.verify(subscriberOne, times(1)).onError(throwable);
+            inOrder.verify(subscriberOne, times(0)).onError(throwable);
             //noinspection unchecked
             inOrder.verify(subscriberTwo, times(1)).onNext("Passion Fruit");
-            inOrder.verify(subscriberTwo, times(1)).onError(throwable);
+            inOrder.verify(subscriberTwo, times(0)).onError(throwable);
         }
 
         @Test
@@ -513,7 +517,7 @@ public class SwarmTest {
             final var subscriberOne = mock(Flow.Subscriber.class);
             final var subscriberTwo = mock(Flow.Subscriber.class);
             final var inOrder = inOrder(subscriberOne, subscriberTwo);
-            final var publisher = new Swarm<>(publish -> this.publish = publish);
+            final var publisher = new OldSingle<>(publish -> this.publish = publish);
             final var subscriptionOneArgumentCaptor = forClass(Flow.Subscription.class);
             final var subscriptionTwoArgumentCaptor = forClass(Flow.Subscription.class);
             //noinspection unchecked

@@ -6,12 +6,12 @@ import java.util.function.Consumer;
 
 import static java.util.Optional.ofNullable;
 
-public final class Single<T> extends BasePublisher<T> {
-    public Single(Consumer<Consumer<Signal<T>>> publishExposure) {
+public final class OldSingle<T> extends BasePublisher<T> {
+    public OldSingle(Consumer<Consumer<Signal<T>>> publishExposure) {
         super(decoratePublisher(publishExposure));
     }
 
-    public Single(Consumer<Consumer<Signal<T>>> publishExposure, int capacity) {
+    public OldSingle(Consumer<Consumer<Signal<T>>> publishExposure, int capacity) {
         super(decoratePublisher(publishExposure), capacity);
     }
 
