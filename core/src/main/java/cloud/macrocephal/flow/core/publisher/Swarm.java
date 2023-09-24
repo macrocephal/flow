@@ -1,8 +1,8 @@
 package cloud.macrocephal.flow.core.publisher;
 
-import cloud.macrocephal.flow.core.publisher.internal.Iteration3BasePublisher;
+import cloud.macrocephal.flow.core.publisher.internal.PublisherDefault;
 
-public final class Swarm<T> extends Iteration3BasePublisher<T> {
+public final class Swarm<T> extends PublisherDefault<T> {
     public Swarm(Driver<T> driver) {
         super(driver);
     }
