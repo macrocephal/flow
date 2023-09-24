@@ -7,6 +7,7 @@ import java.util.function.LongFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+@SuppressWarnings("unused")
 public sealed interface Driver<T> permits Driver.Push, Driver.Pull {
     record Pull<T>(int capacity, Supplier<LongFunction<Stream<Signal<T>>>> pullerFactory) implements Driver<T> {
     }

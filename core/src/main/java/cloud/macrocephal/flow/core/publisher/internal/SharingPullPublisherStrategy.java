@@ -86,6 +86,7 @@ public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrateg
                         iterator.next() instanceof Entry<T>(final var value, final var subscribers)
                         && subscribers.remove(subscriber)) {
                     if (subscribers.isEmpty()) {
+                        //noinspection RedundantOperationOnEmptyContainer
                         subscribers.remove(subscriber);
                     }
 
@@ -111,7 +112,6 @@ public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrateg
 
                             --counter$[0];
                             action.accept(next);
-                            ;
                             entries.add(new Entry<>(next, new LinkedHashSet<>(subscribers)));
                             return true;
                         }
