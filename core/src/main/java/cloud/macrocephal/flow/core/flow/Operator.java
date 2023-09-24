@@ -1,4 +1,4 @@
-package cloud.macrocephal.flow.core.operator;
+package cloud.macrocephal.flow.core.flow;
 
 import java.util.concurrent.Flow.Publisher;
 

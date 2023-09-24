@@ -20,13 +20,13 @@ The java Flow API defines them so let's focus on the specifics of **Flow**:
 ## Syntax
 
 Usage:
+
 ```java
 import cloud.macrocephal.flow.core.OldSingle;
 import cloud.macrocephal.flow.core.OldSwarm;
 
-import static java.util.UUID.randomUUID;
-import static cloud.macrocephal.flow.core.operator.Operator.map;
-import static cloud.macrocephal.flow.core.operator.Operator.flatMap;
+import static cloud.macrocephal.flow.core.flow.Operator.map;
+import static cloud.macrocephal.flow.core.flow.Operator.flatMap;
 
 Single.from(randomUUID())                       // [1] Create a Single of UUID
         .pipe(map(UUID::toString))              // [2] Transform it to a String
@@ -36,23 +36,23 @@ Single.from(randomUUID())                       // [1] Create a Single of UUID
 ```
 
 More control:
+
 ```java
 import cloud.macrocephal.flow.core.OldSwarm;
 import cloud.macrocephal.flow.core.Signal;
 
-import static java.util.UUID.randomUUID;
-import static cloud.macrocephal.flow.core.operator.Operator.map;
-import static cloud.macrocephal.flow.core.operator.Operator.flatMap;
+import static cloud.macrocephal.flow.core.flow.Operator.map;
+import static cloud.macrocephal.flow.core.flow.Operator.flatMap;
 
-final var publish = new AtomicReference<Consumer<Signal<UUID>>>();
-final var uuids = new Swarm<UUID>(publish::set);
+final var publish=new AtomicReference<Consumer<Signal<UUID>>>();
+final var uuids=new Swarm<UUID>(publish::set);
 
 // Pass `uuids` around, pipe it, subscribe to it, or do nothing: I'm not your mamma
 
-publish.accept(randomUUID());
-publish.accept(randomUUID());
-publish.accept(randomUUID());
-publish.accept(randomUUID());
+        publish.accept(randomUUID());
+        publish.accept(randomUUID());
+        publish.accept(randomUUID());
+        publish.accept(randomUUID());
 ```
 
 ## Roadmap
