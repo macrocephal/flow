@@ -1,9 +1,9 @@
 package cloud.macrocephal.flow.core.publisher;
 
-import java.util.concurrent.Flow;
+import cloud.macrocephal.flow.core.publisher.internal.Iteration3BasePublisher;
 
-public final class Single<T> implements Flow.Publisher<T> {
-    @Override
-    public void subscribe(Flow.Subscriber<? super T> subscriber) {
+public final class Single<T> extends Iteration3BasePublisher<T> {
+    public Single(Driver<T> driver) {
+        super(driver);
     }
 }
