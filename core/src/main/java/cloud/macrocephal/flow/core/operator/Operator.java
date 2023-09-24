@@ -1,8 +1,8 @@
 package cloud.macrocephal.flow.core.operator;
 
-import java.util.concurrent.Flow;
+import java.util.concurrent.Flow.Publisher;
 
 @FunctionalInterface
 public interface Operator<T, U> {
-    Flow.Publisher<U> apply(Flow.Publisher<T> operand);
+    <P extends Publisher<U>> P apply(Publisher<T> operand);
 }
