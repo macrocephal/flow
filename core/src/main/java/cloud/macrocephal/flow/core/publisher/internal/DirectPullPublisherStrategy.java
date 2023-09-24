@@ -18,9 +18,8 @@ public class DirectPullPublisherStrategy<T> extends PublisherStrategy<T> {
 
     public DirectPullPublisherStrategy(Driver<T> driver) {
         super(driver);
-        //noinspection PatternVariableHidesField
-        if (driver instanceof Pull(final var capacity, final var pullerFactory) && capacity <= 0) {
-            this.pullerFactory = requireNonNull(pullerFactory);
+        if (driver instanceof Pull<T> pull && pull.capacity() <= 0) {
+            this.pullerFactory = requireNonNull(pull.pullerFactory());
         } else {
             throw new IllegalArgumentException("%s not accepted here.".formatted(driver));
         }

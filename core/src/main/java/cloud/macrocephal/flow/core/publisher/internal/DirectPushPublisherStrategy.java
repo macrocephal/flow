@@ -10,11 +10,12 @@ import cloud.macrocephal.flow.core.publisher.Driver.Push;
 import java.util.concurrent.Flow.Subscriber;
 import java.util.concurrent.Flow.Subscription;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
 public class DirectPushPublisherStrategy<T> extends PublisherStrategy<T> {
-    private final Consumer<Consumer<Signal<T>>> pushConsumer;
+    private final Consumer<Function<Signal<T>, Boolean>> pushConsumer;
     private boolean coldPushBasedPublisherTriggerred;
     private boolean active = true;
     private final boolean cold;
@@ -22,7 +23,12 @@ public class DirectPushPublisherStrategy<T> extends PublisherStrategy<T> {
     public DirectPushPublisherStrategy(Driver<T> driver) {
         super(driver);
         //noinspection PatternVariableHidesField
-        if (driver instanceof Push(final var hot, final var capacity, final var pushConsumer) && capacity <= 0) {
+        if (driver instanceof Push(
+                final var hot,
+                final var capacity,
+                final var ignoredBackPressureStrategy,
+                final var pushConsumer
+        ) && capacity <= 0) {
             this.pushConsumer = requireNonNull(pushConsumer);
             this.cold = !hot;
 
@@ -55,7 +61,7 @@ public class DirectPushPublisherStrategy<T> extends PublisherStrategy<T> {
         }
     }
 
-    synchronized private void push(Signal<T> signal) {
+    synchronized private boolean push(Signal<T> signal) {
         if (active) {
             switch (requireNonNull(signal)) {
                 case Error(final var throwable) -> {
@@ -71,6 +77,10 @@ public class DirectPushPublisherStrategy<T> extends PublisherStrategy<T> {
                     active = false;
                 }
             }
+
+            return true;
+        } else {
+            return false;
         }
     }
 }

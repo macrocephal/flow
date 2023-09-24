@@ -21,29 +21,21 @@ public abstract class BaseSharingPublisherStrategy<T> extends PublisherStrategy<
     protected BaseSharingPublisherStrategy(Driver<T> driver) {
         super(driver);
         switch (driver) {
-            //noinspection PatternVariableHidesField
-            case Pull<T>(final var capacity, final var ignoredPullerFactory) when 0 < capacity ->
-                    this.capacity = capacity;
-            //noinspection PatternVariableHidesField
-            case Push<T>(final var ignoredHot, final var capacity, final var ignoredPushConsumer) when 0 < capacity ->
-                    this.capacity = capacity;
+            case Pull<T> pull when 0 < pull.capacity() -> this.capacity = pull.capacity();
+            case Push<T> push when 0 < push.capacity() -> this.capacity = push.capacity();
             default -> throw new IllegalArgumentException("%s not accepted here.".formatted(driver));
         }
     }
 
     @Override
+    protected synchronized void error(Subscriber<? super T> subscriber, Throwable throwable) {
+        freeUpSubscriber(subscriber);
+        super.error(subscriber, throwable);
+    }
+
+    @Override
     synchronized protected void cancel(Subscriber<? super T> subscriber) {
-        if (subscribers.contains(subscriber)) {
-            final var iterator = entries.iterator();
-
-            while (iterator.hasNext()) {
-                final var subscribers = iterator.next().subscribers();
-
-                if (subscribers.remove(subscriber) && subscribers.isEmpty()) {
-                    iterator.remove();
-                }
-            }
-        }
+        freeUpSubscriber(subscriber);
 
         super.cancel(subscriber);
     }
@@ -57,6 +49,20 @@ public abstract class BaseSharingPublisherStrategy<T> extends PublisherStrategy<
             return false;
         } else {
             return true;
+        }
+    }
+
+    private void freeUpSubscriber(Subscriber<? super T> subscriber) {
+        if (subscribers.contains(subscriber)) {
+            final var iterator = entries.iterator();
+
+            while (iterator.hasNext()) {
+                final var subscribers = iterator.next().subscribers();
+
+                if (subscribers.remove(subscriber) && subscribers.isEmpty()) {
+                    iterator.remove();
+                }
+            }
         }
     }
 

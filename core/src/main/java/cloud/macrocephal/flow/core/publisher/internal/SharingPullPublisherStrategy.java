@@ -4,7 +4,10 @@ import cloud.macrocephal.flow.core.Signal;
 import cloud.macrocephal.flow.core.Signal.Complete;
 import cloud.macrocephal.flow.core.Signal.Error;
 import cloud.macrocephal.flow.core.Signal.Value;
+import cloud.macrocephal.flow.core.exception.LagException;
 import cloud.macrocephal.flow.core.publisher.Driver;
+import cloud.macrocephal.flow.core.publisher.Driver.Pull;
+import cloud.macrocephal.flow.core.publisher.LagStrategy;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -28,12 +31,18 @@ import static java.util.stream.StreamSupport.stream;
 public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrategy<T> {
     private final Supplier<LongFunction<Stream<Signal<T>>>> pullerFactory;
     private LongFunction<Stream<Signal<T>>> puller;
+    private final LagStrategy lagStrategy;
 
     public SharingPullPublisherStrategy(Driver<T> driver) {
         super(driver);
         //noinspection PatternVariableHidesField
-        if (driver instanceof Driver.Pull(final var capacity, final var pullerFactory) && capacity <= 0) {
+        if (driver instanceof Pull(
+                final var capacity,
+                final var lagStrategy,
+                final var pullerFactory
+        ) && capacity <= 0) {
             this.pullerFactory = requireNonNull(pullerFactory);
+            this.lagStrategy = requireNonNull(lagStrategy);
         } else {
             throw new IllegalArgumentException("%s not accepted here.".formatted(driver));
         }
@@ -100,6 +109,7 @@ public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrateg
     }
 
     private Stream<T> getFromQueryWhileUpdatingEntries(long[] counter$) {
+        final var self = this;
         return stream(new AbstractSpliterator<>(MAX_VALUE, ORDERED) {
             final Iterator<Signal<T>> iterator = requireNonNull(puller.apply(counter$[0])).iterator();
 
@@ -112,8 +122,26 @@ public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrateg
 
                             --counter$[0];
                             action.accept(next);
-                            entries.add(new Entry<>(next, new LinkedHashSet<>(subscribers)));
-                            return true;
+                            if (capacity < entries.size()) {
+                                entries.add(new Entry<>(next, new LinkedHashSet<>(subscribers)));
+                                return true;
+                            } else {
+                                switch (lagStrategy) {
+                                    case DROP -> {
+                                    }
+                                    case ERROR -> {
+                                        final var entryIterator = entries.iterator();
+                                        final var nextEntry = entryIterator.next();
+                                        entryIterator.remove();
+                                        entryIterator.forEachRemaining(self::noop);
+                                        nextEntry.subscribers().forEach(subscriber ->
+                                                error(subscriber, new LagException(subscriber, self)));
+                                        return true;
+                                    }
+                                    case THROW -> throw new LagException(null, SharingPullPublisherStrategy.this);
+                                }
+                                return false;
+                            }
                         }
                         case Error(final var throwable) -> {
                             iterator.forEachRemaining(identity()::apply);
