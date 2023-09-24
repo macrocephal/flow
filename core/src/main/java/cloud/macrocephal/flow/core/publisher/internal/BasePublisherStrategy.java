@@ -1,6 +1,6 @@
 package cloud.macrocephal.flow.core.publisher.internal;
 
-import cloud.macrocephal.flow.core.publisher.Driver;
+import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -9,11 +9,11 @@ import java.util.concurrent.Flow.Subscriber;
 
 import static java.util.Objects.requireNonNull;
 
-public abstract class PublisherStrategy<T> implements Publisher<T> {
+public abstract class BasePublisherStrategy<T> implements Publisher<T> {
     protected final Set<Subscriber<? super T>> subscribers = new LinkedHashSet<>();
 
-    protected PublisherStrategy(Driver<T> driver) {
-        requireNonNull(driver);
+    protected BasePublisherStrategy(PublisherStrategy<T> publisherStrategy) {
+        requireNonNull(publisherStrategy);
     }
 
     synchronized protected void error(Subscriber<? super T> subscriber, Throwable throwable) {

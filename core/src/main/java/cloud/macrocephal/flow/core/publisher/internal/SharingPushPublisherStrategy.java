@@ -5,9 +5,9 @@ import cloud.macrocephal.flow.core.Signal.Complete;
 import cloud.macrocephal.flow.core.Signal.Error;
 import cloud.macrocephal.flow.core.Signal.Value;
 import cloud.macrocephal.flow.core.exception.BackPressureException;
-import cloud.macrocephal.flow.core.publisher.BackPressureStrategy;
-import cloud.macrocephal.flow.core.publisher.Driver;
-import cloud.macrocephal.flow.core.publisher.Driver.Push;
+import cloud.macrocephal.flow.core.publisher.strategy.BackPressureStrategy;
+import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
+import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Push;
 
 import java.util.LinkedHashSet;
 import java.util.concurrent.Flow;
@@ -24,10 +24,10 @@ public class SharingPushPublisherStrategy<T> extends BaseSharingPublisherStrateg
     private boolean coldPushBasedPublisherTriggerred;
     private final boolean cold;
 
-    public SharingPushPublisherStrategy(Driver<T> driver) {
-        super(driver);
+    public SharingPushPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
+        super(publisherStrategy);
         //noinspection PatternVariableHidesField
-        if (driver instanceof Push<T>(
+        if (publisherStrategy instanceof Push<T>(
                 final var hot,
                 final var capacity,
                 final var backPressureStrategy,
@@ -41,7 +41,7 @@ public class SharingPushPublisherStrategy<T> extends BaseSharingPublisherStrateg
                 pushConsumer.accept(this::push);
             }
         } else {
-            throw new IllegalArgumentException("%s not accepted here.".formatted(driver));
+            throw new IllegalArgumentException("%s not accepted here.".formatted(publisherStrategy));
         }
     }
 

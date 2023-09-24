@@ -1,4 +1,4 @@
-package cloud.macrocephal.flow.core.publisher;
+package cloud.macrocephal.flow.core.publisher.strategy;
 
 import cloud.macrocephal.flow.core.Signal;
 
@@ -9,15 +9,15 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
-public sealed interface Driver<T> permits Driver.Push, Driver.Pull {
+public sealed interface PublisherStrategy<T> permits PublisherStrategy.Push, PublisherStrategy.Pull {
     record Pull<T>(int capacity,
                    LagStrategy lagStrategy,
-                   Supplier<LongFunction<Stream<Signal<T>>>> pullerFactory) implements Driver<T> {
+                   Supplier<LongFunction<Stream<Signal<T>>>> pullerFactory) implements PublisherStrategy<T> {
     }
 
     record Push<T>(boolean hot,
                    int capacity,
                    BackPressureStrategy backPressureStrategy,
-                   Consumer<Function<Signal<T>, Boolean>> pushConsumer) implements Driver<T> {
+                   Consumer<Function<Signal<T>, Boolean>> pushConsumer) implements PublisherStrategy<T> {
     }
 }

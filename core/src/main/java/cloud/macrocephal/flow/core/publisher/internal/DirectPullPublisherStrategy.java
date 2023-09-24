@@ -1,8 +1,8 @@
 package cloud.macrocephal.flow.core.publisher.internal;
 
 import cloud.macrocephal.flow.core.Signal;
-import cloud.macrocephal.flow.core.publisher.Driver;
-import cloud.macrocephal.flow.core.publisher.Driver.Pull;
+import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
+import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Pull;
 
 import java.util.concurrent.Flow.Subscriber;
 import java.util.concurrent.Flow.Subscription;
@@ -13,15 +13,15 @@ import java.util.stream.Stream;
 import static java.lang.Math.max;
 import static java.util.Objects.requireNonNull;
 
-public class DirectPullPublisherStrategy<T> extends PublisherStrategy<T> {
+public class DirectPullPublisherStrategy<T> extends BasePublisherStrategy<T> {
     private final Supplier<LongFunction<Stream<Signal<T>>>> pullerFactory;
 
-    public DirectPullPublisherStrategy(Driver<T> driver) {
-        super(driver);
-        if (driver instanceof Pull<T> pull && pull.capacity() <= 0) {
+    public DirectPullPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
+        super(publisherStrategy);
+        if (publisherStrategy instanceof Pull<T> pull && pull.capacity() <= 0) {
             this.pullerFactory = requireNonNull(pull.pullerFactory());
         } else {
-            throw new IllegalArgumentException("%s not accepted here.".formatted(driver));
+            throw new IllegalArgumentException("%s not accepted here.".formatted(publisherStrategy));
         }
     }
 

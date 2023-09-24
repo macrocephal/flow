@@ -4,8 +4,8 @@ import cloud.macrocephal.flow.core.Signal;
 import cloud.macrocephal.flow.core.Signal.Complete;
 import cloud.macrocephal.flow.core.Signal.Error;
 import cloud.macrocephal.flow.core.Signal.Value;
-import cloud.macrocephal.flow.core.publisher.Driver;
-import cloud.macrocephal.flow.core.publisher.Driver.Push;
+import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
+import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Push;
 
 import java.util.concurrent.Flow.Subscriber;
 import java.util.concurrent.Flow.Subscription;
@@ -14,16 +14,16 @@ import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
-public class DirectPushPublisherStrategy<T> extends PublisherStrategy<T> {
+public class DirectPushPublisherStrategy<T> extends BasePublisherStrategy<T> {
     private final Consumer<Function<Signal<T>, Boolean>> pushConsumer;
     private boolean coldPushBasedPublisherTriggerred;
     private boolean active = true;
     private final boolean cold;
 
-    public DirectPushPublisherStrategy(Driver<T> driver) {
-        super(driver);
+    public DirectPushPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
+        super(publisherStrategy);
         //noinspection PatternVariableHidesField
-        if (driver instanceof Push(
+        if (publisherStrategy instanceof Push(
                 final var hot,
                 final var capacity,
                 final var ignoredBackPressureStrategy,
@@ -36,7 +36,7 @@ public class DirectPushPublisherStrategy<T> extends PublisherStrategy<T> {
                 pushConsumer.accept(this::push);
             }
         } else {
-            throw new IllegalArgumentException("%s not accepted here.".formatted(driver));
+            throw new IllegalArgumentException("%s not accepted here.".formatted(publisherStrategy));
         }
     }
 

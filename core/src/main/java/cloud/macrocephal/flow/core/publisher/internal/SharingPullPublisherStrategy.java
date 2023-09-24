@@ -5,9 +5,9 @@ import cloud.macrocephal.flow.core.Signal.Complete;
 import cloud.macrocephal.flow.core.Signal.Error;
 import cloud.macrocephal.flow.core.Signal.Value;
 import cloud.macrocephal.flow.core.exception.LagException;
-import cloud.macrocephal.flow.core.publisher.Driver;
-import cloud.macrocephal.flow.core.publisher.Driver.Pull;
-import cloud.macrocephal.flow.core.publisher.LagStrategy;
+import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
+import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Pull;
+import cloud.macrocephal.flow.core.publisher.strategy.LagStrategy;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -33,10 +33,10 @@ public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrateg
     private LongFunction<Stream<Signal<T>>> puller;
     private final LagStrategy lagStrategy;
 
-    public SharingPullPublisherStrategy(Driver<T> driver) {
-        super(driver);
+    public SharingPullPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
+        super(publisherStrategy);
         //noinspection PatternVariableHidesField
-        if (driver instanceof Pull(
+        if (publisherStrategy instanceof Pull(
                 final var capacity,
                 final var lagStrategy,
                 final var pullerFactory
@@ -44,7 +44,7 @@ public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrateg
             this.pullerFactory = requireNonNull(pullerFactory);
             this.lagStrategy = requireNonNull(lagStrategy);
         } else {
-            throw new IllegalArgumentException("%s not accepted here.".formatted(driver));
+            throw new IllegalArgumentException("%s not accepted here.".formatted(publisherStrategy));
         }
     }
 
