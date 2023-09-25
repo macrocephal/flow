@@ -5,9 +5,9 @@ import cloud.macrocephal.flow.core.Signal.Complete;
 import cloud.macrocephal.flow.core.Signal.Error;
 import cloud.macrocephal.flow.core.Signal.Value;
 import cloud.macrocephal.flow.core.exception.LagException;
+import cloud.macrocephal.flow.core.publisher.strategy.LagStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Pull;
-import cloud.macrocephal.flow.core.publisher.strategy.LagStrategy;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -21,6 +21,8 @@ import java.util.stream.Stream;
 
 import static java.lang.Long.MAX_VALUE;
 import static java.lang.Math.max;
+import static java.math.BigInteger.ZERO;
+import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.Spliterator.ORDERED;
@@ -40,7 +42,7 @@ public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrateg
                 final var capacity,
                 final var lagStrategy,
                 final var pullerFactory
-        ) && capacity <= 0) {
+        ) && (isNull(capacity) || 0 < capacity.compareTo(ZERO))) {
             this.pullerFactory = requireNonNull(pullerFactory);
             this.lagStrategy = requireNonNull(lagStrategy);
         } else {
@@ -122,7 +124,7 @@ public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrateg
 
                             --counter$[0];
                             action.accept(next);
-                            if (capacity < entries.size()) {
+                            if (isBufferFullToCapacity()) {
                                 entries.add(new Entry<>(next, new LinkedHashSet<>(subscribers)));
                                 return true;
                             } else {

@@ -12,6 +12,7 @@ import java.util.concurrent.Flow.Subscription;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static java.math.BigInteger.ZERO;
 import static java.util.Objects.requireNonNull;
 
 public class DirectPushPublisherStrategy<T> extends BasePublisherStrategy<T> {
@@ -28,7 +29,7 @@ public class DirectPushPublisherStrategy<T> extends BasePublisherStrategy<T> {
                 final var capacity,
                 final var ignoredBackPressureStrategy,
                 final var pushConsumer
-        ) && capacity <= 0) {
+        ) && capacity.compareTo(ZERO) <= 0) {
             this.pushConsumer = requireNonNull(pushConsumer);
             this.cold = !hot;
 

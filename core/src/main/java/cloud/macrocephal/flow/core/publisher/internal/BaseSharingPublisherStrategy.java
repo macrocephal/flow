@@ -4,25 +4,30 @@ import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Pull;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Push;
 
+import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Flow.Subscriber;
 
+import static java.math.BigInteger.ZERO;
+import static java.math.BigInteger.valueOf;
 import static java.util.Objects.isNull;
 
 public abstract class BaseSharingPublisherStrategy<T> extends BasePublisherStrategy<T> {
     protected final List<Entry<T>> entries = new LinkedList<>();
+    protected final BigInteger capacity;
     protected boolean active = true;
-    protected final int capacity;
     protected boolean completed;
     protected Throwable error;
 
     protected BaseSharingPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
         super(publisherStrategy);
         switch (publisherStrategy) {
-            case Pull<T> pull when 0 < pull.capacity() -> this.capacity = pull.capacity();
-            case Push<T> push when 0 < push.capacity() -> this.capacity = push.capacity();
+            case Pull<T> pull when isNull(pull.capacity()) || 0 < pull.capacity().compareTo(ZERO) ->
+                    this.capacity = pull.capacity();
+            case Push<T> push when isNull(push.capacity()) || 0 < push.capacity().compareTo(ZERO) ->
+                    this.capacity = push.capacity();
             default -> throw new IllegalArgumentException("%s not accepted here.".formatted(publisherStrategy));
         }
     }
@@ -64,6 +69,10 @@ public abstract class BaseSharingPublisherStrategy<T> extends BasePublisherStrat
                 }
             }
         }
+    }
+
+    protected boolean isBufferFullToCapacity() {
+        return !isNull(capacity) && capacity.compareTo(valueOf(entries.size())) < 0;
     }
 
     protected record Entry<T>(T value, Set<Subscriber<? super T>> subscribers) {

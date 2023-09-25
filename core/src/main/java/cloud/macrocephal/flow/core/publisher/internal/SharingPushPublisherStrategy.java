@@ -16,6 +16,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static java.lang.Math.max;
+import static java.math.BigInteger.ZERO;
+import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 
 public class SharingPushPublisherStrategy<T> extends BaseSharingPublisherStrategy<T> {
@@ -32,7 +34,7 @@ public class SharingPushPublisherStrategy<T> extends BaseSharingPublisherStrateg
                 final var capacity,
                 final var backPressureStrategy,
                 final var pushConsumer
-        ) && 0 < capacity) {
+        ) && (isNull(capacity) || 0 < capacity.compareTo(ZERO))) {
             this.backPressureStrategy = requireNonNull(backPressureStrategy);
             this.pushConsumer = requireNonNull(pushConsumer);
             this.cold = !hot;
@@ -100,7 +102,7 @@ public class SharingPushPublisherStrategy<T> extends BaseSharingPublisherStrateg
                 case Value(var value) -> {
                     final var next = requireNonNull(value);
 
-                    if (capacity < entries.size()) {
+                    if (isBufferFullToCapacity()) {
                         entries.add(new Entry<>(next, new LinkedHashSet<>(subscribers)));
                     } else {
                         return switch (backPressureStrategy) {

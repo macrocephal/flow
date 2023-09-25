@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static java.lang.Math.max;
+import static java.math.BigInteger.ZERO;
 import static java.util.Objects.requireNonNull;
 
 public class DirectPullPublisherStrategy<T> extends BasePublisherStrategy<T> {
@@ -18,7 +19,7 @@ public class DirectPullPublisherStrategy<T> extends BasePublisherStrategy<T> {
 
     public DirectPullPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
         super(publisherStrategy);
-        if (publisherStrategy instanceof Pull<T> pull && pull.capacity() <= 0) {
+        if (publisherStrategy instanceof Pull<T> pull && pull.capacity().compareTo(ZERO) <= 0) {
             this.pullerFactory = requireNonNull(pull.pullerFactory());
         } else {
             throw new IllegalArgumentException("%s not accepted here.".formatted(publisherStrategy));

@@ -1,12 +1,13 @@
 package cloud.macrocephal.flow.core.exception;
 
+import java.math.BigInteger;
 import java.util.concurrent.Flow.Publisher;
 
 public class BackPressureException extends IllegalStateException {
     private final Publisher<?> publisher;
-    private final int capacity;
+    private final BigInteger capacity;
 
-    public BackPressureException(Publisher<?> publisher, int capacity) {
+    public BackPressureException(Publisher<?> publisher, BigInteger capacity) {
         this.publisher = publisher;
         this.capacity = capacity;
     }
@@ -15,7 +16,7 @@ public class BackPressureException extends IllegalStateException {
         return publisher;
     }
 
-    public int getCapacity() {
+    public BigInteger getCapacity() {
         return capacity;
     }
 }

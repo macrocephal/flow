@@ -112,7 +112,7 @@ public class BasePublisher<T> implements Flow.Publisher<T> {
                 //        And we do not want to rush lagging subscribers...
                 //        Are we okay dropping last value for this one?
                 //        Or should rather supersede ordering and push one last one?
-                publish(new Signal.Error<>(new BackPressureException(this, capacity)));
+                publish(new Signal.Error<>(new BackPressureException(this, null)));
             }
         }
     }
