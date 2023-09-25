@@ -1,21 +1,19 @@
 package cloud.macrocephal.flow.core.publisher.internal;
 
+import cloud.macrocephal.flow.core.buffer.Buffer;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Pull;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Push;
 
 import java.math.BigInteger;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Flow.Subscriber;
 
 import static java.math.BigInteger.ZERO;
-import static java.math.BigInteger.valueOf;
 import static java.util.Objects.isNull;
 
 public abstract class BaseSharingPublisherStrategy<T> extends BasePublisherStrategy<T> {
-    protected final List<Entry<T>> entries = new LinkedList<>();
+    protected final Buffer<Entry<T>> entries = Buffer.of();
     protected final BigInteger capacity;
     protected boolean active = true;
     protected boolean completed;
@@ -72,7 +70,7 @@ public abstract class BaseSharingPublisherStrategy<T> extends BasePublisherStrat
     }
 
     protected boolean isBufferFullToCapacity() {
-        return !isNull(capacity) && capacity.compareTo(valueOf(entries.size())) < 0;
+        return !isNull(capacity) && capacity.compareTo(entries.size()) < 0;
     }
 
     protected record Entry<T>(T value, Set<Subscriber<? super T>> subscribers) {
