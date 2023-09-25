@@ -28,7 +28,7 @@ public class DirectPullPublisherStrategy<T> extends BasePublisherStrategy<T> {
 
     @Override
     synchronized public void subscribe(Subscriber<? super T> subscriber) {
-        if (subscribers.add(subscriber)) {
+        if (!subscribers.contains(subscriber) && subscribers.add(subscriber)) {
             final var puller = requireNonNull(pullerFactory.get());
             subscriber.onSubscribe(new Subscription() {
                 @Override

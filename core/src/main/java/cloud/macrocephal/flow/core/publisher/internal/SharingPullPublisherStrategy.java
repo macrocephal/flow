@@ -10,7 +10,6 @@ import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Pull;
 
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.concurrent.Flow.Subscriber;
 import java.util.concurrent.Flow.Subscription;
@@ -19,6 +18,7 @@ import java.util.function.LongFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import static cloud.macrocephal.flow.core.buffer.Buffer.from;
 import static java.lang.Long.MAX_VALUE;
 import static java.lang.Math.max;
 import static java.math.BigInteger.ZERO;
@@ -52,7 +52,7 @@ public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrateg
 
     @Override
     synchronized public void subscribe(Subscriber<? super T> subscriber) {
-        if (active && subscribers.add(subscriber)) {
+        if (active && !subscribers.contains(subscriber) && subscribers.add(subscriber)) {
             subscriber.onSubscribe(new Subscription() {
                 @Override
                 public void request(long n) {
@@ -97,7 +97,6 @@ public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrateg
                         iterator.next() instanceof Entry<T>(var value, var subscribers)
                         && subscribers.remove(subscriber)) {
                     if (subscribers.isEmpty()) {
-                        //noinspection RedundantOperationOnEmptyContainer
                         subscribers.remove(subscriber);
                     }
 
@@ -125,7 +124,7 @@ public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrateg
                             --counter$[0];
                             action.accept(next);
                             if (isBufferFullToCapacity()) {
-                                entries.add(new Entry<>(next, new LinkedHashSet<>(subscribers)));
+                                entries.add(new Entry<>(next, from(subscribers)));
                                 return true;
                             } else {
                                 switch (lagStrategy) {

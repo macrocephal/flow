@@ -9,12 +9,12 @@ import cloud.macrocephal.flow.core.publisher.strategy.BackPressureStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Push;
 
-import java.util.LinkedHashSet;
 import java.util.concurrent.Flow;
 import java.util.concurrent.Flow.Subscriber;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static cloud.macrocephal.flow.core.buffer.Buffer.from;
 import static java.lang.Math.max;
 import static java.math.BigInteger.ZERO;
 import static java.util.Objects.isNull;
@@ -49,7 +49,7 @@ public class SharingPushPublisherStrategy<T> extends BaseSharingPublisherStrateg
 
     @Override
     synchronized public void subscribe(Subscriber<? super T> subscriber) {
-        if (active && subscribers.add(subscriber)) {
+        if (active && !subscribers.contains(subscriber) && subscribers.add(subscriber)) {
             if (cold && !coldPushBasedPublisherTriggerred) {
                 coldPushBasedPublisherTriggerred = true;
                 pushConsumer.accept(this::push);
@@ -103,7 +103,7 @@ public class SharingPushPublisherStrategy<T> extends BaseSharingPublisherStrateg
                     final var next = requireNonNull(value);
 
                     if (isBufferFullToCapacity()) {
-                        entries.add(new Entry<>(next, new LinkedHashSet<>(subscribers)));
+                        entries.add(new Entry<>(next, from(subscribers)));
                     } else {
                         return switch (backPressureStrategy) {
                             case DROP -> true;

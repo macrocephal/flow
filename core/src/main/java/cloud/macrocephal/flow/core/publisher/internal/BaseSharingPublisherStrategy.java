@@ -6,7 +6,6 @@ import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Pull;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Push;
 
 import java.math.BigInteger;
-import java.util.Set;
 import java.util.concurrent.Flow.Subscriber;
 
 import static java.math.BigInteger.ZERO;
@@ -73,6 +72,6 @@ public abstract class BaseSharingPublisherStrategy<T> extends BasePublisherStrat
         return !isNull(capacity) && capacity.compareTo(entries.size()) < 0;
     }
 
-    protected record Entry<T>(T value, Set<Subscriber<? super T>> subscribers) {
+    protected record Entry<T>(T value, Buffer<Subscriber<? super T>> subscribers) {
     }
 }

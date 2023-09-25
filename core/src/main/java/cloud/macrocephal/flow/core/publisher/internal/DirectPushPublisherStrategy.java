@@ -43,7 +43,7 @@ public class DirectPushPublisherStrategy<T> extends BasePublisherStrategy<T> {
 
     @Override
     synchronized public void subscribe(Subscriber<? super T> subscriber) {
-        if (active && subscribers.add(subscriber)) {
+        if (active && !subscribers.contains(subscriber) && subscribers.add(subscriber)) {
             if (cold && !coldPushBasedPublisherTriggerred) {
                 coldPushBasedPublisherTriggerred = true;
                 pushConsumer.accept(this::push);

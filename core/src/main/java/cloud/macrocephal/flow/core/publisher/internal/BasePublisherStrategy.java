@@ -1,16 +1,16 @@
 package cloud.macrocephal.flow.core.publisher.internal;
 
+import cloud.macrocephal.flow.core.buffer.Buffer;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.concurrent.Flow.Publisher;
 import java.util.concurrent.Flow.Subscriber;
 
 import static java.util.Objects.requireNonNull;
 
 public abstract class BasePublisherStrategy<T> implements Publisher<T> {
-    protected final Set<Subscriber<? super T>> subscribers = new LinkedHashSet<>();
+    //    protected final Set<Subscriber<? super T>> subscribers = new LinkedHashSet<>();
+    protected final Buffer<Subscriber<? super T>> subscribers = Buffer.of();
 
     protected BasePublisherStrategy(PublisherStrategy<T> publisherStrategy) {
         requireNonNull(publisherStrategy);
@@ -27,7 +27,14 @@ public abstract class BasePublisherStrategy<T> implements Publisher<T> {
     }
 
     synchronized protected void cancel(Subscriber<? super T> subscriber) {
-        subscribers.remove(subscriber);
+        final var iterator = subscribers.iterator();
+
+        while (iterator.hasNext()) {
+            if (subscriber == iterator.next()) {
+                iterator.remove();
+                iterator.forEachRemaining(this::noop);
+            }
+        }
     }
 
     protected <U> void noop(U ignored) {
