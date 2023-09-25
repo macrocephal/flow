@@ -6,11 +6,14 @@ import java.math.BigInteger;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.ZERO;
 import static java.util.Objects.isNull;
+import static java.util.Objects.requireNonNull;
+import static java.util.function.Function.identity;
 
 public class BufferDefault<T> implements Buffer<T> {
     private final AtomicLong iteratorCount = new AtomicLong(0);
@@ -23,18 +26,53 @@ public class BufferDefault<T> implements Buffer<T> {
         this.capacity = capacity;
     }
 
+    public BufferDefault(Buffer<T> buffer) {
+        this((BigInteger) null);
+
+        for (final T value : requireNonNull(buffer)) {
+            add(value);
+        }
+    }
+
+    @Override
+    synchronized public boolean contains(T value) {
+        final var iterator = iterator();
+
+        while (iterator.hasNext()) {
+            if (Objects.equals(value, iterator.next())) {
+                iterator.forEachRemaining(identity()::apply);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    synchronized public boolean remove(T value) {
+        final var iterator = iterator();
+
+        while (iterator.hasNext()) {
+            if (Objects.equals(value, iterator.next())) {
+                iterator.remove();
+                iterator.forEachRemaining(identity()::apply);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     synchronized public BigInteger size() {
         return size;
     }
 
     synchronized public boolean add(T value) {
-        if (isNull(capacity) || size.compareTo(capacity) < 0) {
+        if (isNull(capacity) || 0 < capacity.compareTo(size)) {
             if (0 < iteratorCount.get()) {
                 throw new ConcurrentModificationException();
             } else if (isNull(first)) {
                 first = new Node<>(null, value, null);
-                size = size.subtract(ONE);
-                return true;
             } else if (isNull(last)) {
                 last = new Node<>(first, value, null);
                 first.next = last;
@@ -44,10 +82,17 @@ public class BufferDefault<T> implements Buffer<T> {
                 this.last = last;
             }
 
+            size = size.add(ONE);
+
             return true;
         } else {
             return false;
         }
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return ZERO.equals(size);
     }
 
     @Override
@@ -69,20 +114,23 @@ public class BufferDefault<T> implements Buffer<T> {
                 } else if (removed) {
                     throw new IllegalStateException("Iterator's remove method has already been called.");
                 } else if (!isNull(current)) {
-                    final var next = current.next;
-
-                    if (!isNull(next)) {
-                        next.previous = current.previous;
+                    if (!isNull(current.previous)) {
+                        current.previous.next = current.next;
                     }
 
-                    if (current == first) {
-                        first = next;
+                    if (!isNull(current.next)) {
+                        current.next.previous = current.previous;
+                    }
+
+                    if (first == current) {
+                        first = current.next;
                     }
 
                     if (current == last) {
                         last = null;
                     }
 
+                    size = size.subtract(ONE);
                     removed = true;
                 }
             }

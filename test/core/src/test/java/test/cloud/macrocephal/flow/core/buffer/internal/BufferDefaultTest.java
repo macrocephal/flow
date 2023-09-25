@@ -5,9 +5,11 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static java.math.BigInteger.*;
 import static java.util.function.Function.identity;
+import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -106,6 +108,77 @@ public class BufferDefaultTest {
             assertThrows(IllegalStateException.class, iterator::remove);
             assertThrows(IllegalStateException.class, iterator::remove);
             assertThrows(IllegalStateException.class, iterator::remove);
+        });
+    }
+
+    @Test
+    void contains_return_true_if_reference_exists_in_buffer() {
+        of(Buffer.of(), Buffer.of(valueOf(7)), Buffer.of(null)).forEach(buffer -> {
+            of(new Object[0], empty(), Optional.empty()).forEachOrdered(buffer::add);
+            assertThat(buffer.contains(Optional.empty())).isTrue();
+        });
+    }
+
+    @Test
+    void contains_return_true_if_equals_entry_exists_in_buffer() {
+        of(Buffer.of(), Buffer.of(valueOf(7)), Buffer.of(null)).forEach(buffer -> {
+            of(new Object[0], empty(), "A").forEachOrdered(buffer::add);
+            assertThat(buffer.contains("A")).isTrue();
+        });
+    }
+
+    @Test
+    void contains_return_true_if_no_entry_exists_with_same_reference_or_equals_matched_in_buffer() {
+        of(Buffer.of(), Buffer.of(valueOf(7)), Buffer.of(null)).forEach(buffer -> {
+            of(new Object[0], empty(), "A").forEachOrdered(buffer::add);
+            assertThat(buffer.contains(30)).isFalse();
+        });
+    }
+
+    @Test
+    void remove_remove_first_matching_occurrence_from_buffer() {
+        of(Buffer.of(), Buffer.of(valueOf(7)), Buffer.of(null)).forEach(buffer -> {
+            final var EMPTY_STREAM = empty();
+            //noinspection StringOperationCanBeSimplified
+            of(new Object[0], EMPTY_STREAM, new String("A"), "A").forEachOrdered(buffer::add);
+            buffer.remove("A");
+            assertThat(buffer).containsExactly(new Object[0], EMPTY_STREAM, "A");
+        });
+    }
+
+    @Test
+    void remove_return_true_when_successfully_removed() {
+        of(Buffer.of(), Buffer.of(valueOf(7)), Buffer.of(null)).forEach(buffer -> {
+            final var EMPTY_STREAM = empty();
+            //noinspection StringOperationCanBeSimplified
+            of(new Object[0], EMPTY_STREAM, "A", new String("A")).forEachOrdered(buffer::add);
+            assertThat(buffer.remove("A")).isTrue();
+        });
+    }
+
+    @Test
+    void remove_return_false_when_none_removed() {
+        of(Buffer.of(), Buffer.of(valueOf(7)), Buffer.of(null)).forEach(buffer -> {
+            final var EMPTY_STREAM = empty();
+            //noinspection StringOperationCanBeSimplified
+            of(new Object[0], EMPTY_STREAM, new String("A"), "A").forEachOrdered(buffer::add);
+            assertThat(buffer.remove(0)).isFalse();
+        });
+    }
+
+    @Test
+    void isEmpty_return_true_when_buffer_contains_no_value() {
+        of(Buffer.of(), Buffer.of(valueOf(7)), Buffer.of(null))
+                .forEach(buffer -> assertThat(buffer.isEmpty()).isTrue());
+    }
+
+    @Test
+    void isEmpty_return_false_when_buffer_is_empty() {
+        of(Buffer.of(), Buffer.of(valueOf(7)), Buffer.of(null)).forEach(buffer -> {
+            final var EMPTY_STREAM = empty();
+            //noinspection StringOperationCanBeSimplified
+            of(new Object[0], EMPTY_STREAM, "A", new String("A")).forEachOrdered(buffer::add);
+            assertThat(buffer.isEmpty()).isFalse();
         });
     }
 }
