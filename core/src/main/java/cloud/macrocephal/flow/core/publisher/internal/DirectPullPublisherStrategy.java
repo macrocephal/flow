@@ -54,12 +54,12 @@ public class DirectPullPublisherStrategy<T> extends BasePublisherStrategy<T> {
 
             while (iterator.hasNext()) {
                 switch (iterator.next()) {
-                    case Signal.Value(final var value) when 0 < counter$[0] -> {
+                    case Signal.Value(var value) when 0 < counter$[0] -> {
                         final var next = requireNonNull(value);
                         subscriber.onNext(next);
                         --counter$[0];
                     }
-                    case Signal.Error(final var throwable) -> {
+                    case Signal.Error(var throwable) -> {
                         iterator.forEachRemaining(this::noop);
                         error(subscriber, throwable);
                         return;

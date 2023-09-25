@@ -75,7 +75,7 @@ public class SharingPushPublisherStrategy<T> extends BaseSharingPublisherStrateg
             //noinspection PatternVariableHidesField
             while (0 < counter$[0] &&
                     iterator.hasNext() &&
-                    iterator.next() instanceof Entry<T>(final var value, final var subscribers)) {
+                    iterator.next() instanceof Entry<T>(var value, var subscribers)) {
                 if (subscribers.remove(subscriber)) {
                     if (subscribers.isEmpty()) {
                         iterator.remove();
@@ -93,11 +93,11 @@ public class SharingPushPublisherStrategy<T> extends BaseSharingPublisherStrateg
     synchronized private Boolean push(Signal<T> signal) {
         if (active) {
             switch (requireNonNull(signal)) {
-                case Error(final var throwable) -> {
+                case Error(var throwable) -> {
                     error = throwable;
                     active = false;
                 }
-                case Value(final var value) -> {
+                case Value(var value) -> {
                     final var next = requireNonNull(value);
 
                     if (capacity < entries.size()) {

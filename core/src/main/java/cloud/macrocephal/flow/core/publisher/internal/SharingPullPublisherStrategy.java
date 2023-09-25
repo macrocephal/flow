@@ -92,7 +92,7 @@ public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrateg
                 //noinspection PatternVariableHidesField
                 if (0 < counter$[0] &&
                         iterator.hasNext() &&
-                        iterator.next() instanceof Entry<T>(final var value, final var subscribers)
+                        iterator.next() instanceof Entry<T>(var value, var subscribers)
                         && subscribers.remove(subscriber)) {
                     if (subscribers.isEmpty()) {
                         //noinspection RedundantOperationOnEmptyContainer
@@ -117,7 +117,7 @@ public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrateg
             public boolean tryAdvance(Consumer<? super T> action) {
                 if (0 < counter$[0] && iterator.hasNext()) {
                     switch (requireNonNull(iterator.next())) {
-                        case Value(final var value) when 0 < counter$[0] -> {
+                        case Value(var value) when 0 < counter$[0] -> {
                             final var next = requireNonNull(value);
 
                             --counter$[0];
@@ -143,7 +143,7 @@ public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrateg
                                 return false;
                             }
                         }
-                        case Error(final var throwable) -> {
+                        case Error(var throwable) -> {
                             iterator.forEachRemaining(identity()::apply);
                             error = requireNonNull(throwable);
                             return active = false;

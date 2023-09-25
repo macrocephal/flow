@@ -59,7 +59,7 @@ public class BasePublisher<T> implements Flow.Publisher<T> {
         valueTracks.removeIf(entry -> {
             if (entry.getValue().contains(subscriber)) {
                 switch (entry.getKey()) {
-                    case Signal.Value<T>(final var value) when !overstepped.get() -> {
+                    case Signal.Value<T>(var value) when !overstepped.get() -> {
                         final var counter = subscriberCount.get(subscriber);
 
                         if (0 > BigInteger.ZERO.compareTo(counter)) {
@@ -75,7 +75,7 @@ public class BasePublisher<T> implements Flow.Publisher<T> {
                         subscriberCount.remove(subscriber);
                         subscriber.onComplete();
                     }
-                    case Signal.Error<T>(final var throwable) when !overstepped.get() -> {
+                    case Signal.Error<T>(var throwable) when !overstepped.get() -> {
                         entry.getValue().remove(subscriber);
                         subscriberCount.remove(subscriber);
                         subscriber.onError(throwable);

@@ -64,11 +64,11 @@ public class DirectPushPublisherStrategy<T> extends BasePublisherStrategy<T> {
     synchronized private boolean push(Signal<T> signal) {
         if (active) {
             switch (requireNonNull(signal)) {
-                case Error(final var throwable) -> {
+                case Error(var throwable) -> {
                     subscribers.forEach(subscriber -> error(subscriber, throwable));
                     active = false;
                 }
-                case Value(final var value) -> {
+                case Value(var value) -> {
                     final var next = requireNonNull(value);
                     subscribers.forEach(subscriber -> subscriber.onNext(next));
                 }
