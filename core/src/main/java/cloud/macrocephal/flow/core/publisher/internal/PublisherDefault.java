@@ -1,5 +1,6 @@
 package cloud.macrocephal.flow.core.publisher.internal;
 
+import cloud.macrocephal.flow.core.publisher.Operator;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Pull;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Push;
@@ -12,7 +13,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 
 public class PublisherDefault<T> implements Publisher<T> {
-    private final BasePublisherStrategy<T> strategy;
+    private final Publisher<T> strategy;
 
     protected PublisherDefault(PublisherStrategy<T> publisherStrategy) {
         strategy = switch (requireNonNull(publisherStrategy)) {
@@ -28,5 +29,9 @@ public class PublisherDefault<T> implements Publisher<T> {
     @Override
     public void subscribe(Subscriber<? super T> subscriber) {
         strategy.subscribe(subscriber);
+    }
+
+    protected <U, P extends Publisher<U>> P pipe(Operator<T, U, P> operator) {
+        return operator.apply(this);
     }
 }
