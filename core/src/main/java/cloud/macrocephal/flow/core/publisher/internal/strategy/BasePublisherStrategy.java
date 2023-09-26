@@ -1,4 +1,4 @@
-package cloud.macrocephal.flow.core.publisher.internal;
+package cloud.macrocephal.flow.core.publisher.internal.strategy;
 
 import cloud.macrocephal.flow.core.buffer.Buffer;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
@@ -9,7 +9,6 @@ import java.util.concurrent.Flow.Subscriber;
 import static java.util.Objects.requireNonNull;
 
 public abstract class BasePublisherStrategy<T> implements Publisher<T> {
-    //    protected final Set<Subscriber<? super T>> subscribers = new LinkedHashSet<>();
     protected final Buffer<Subscriber<? super T>> subscribers = Buffer.of();
 
     protected BasePublisherStrategy(PublisherStrategy<T> publisherStrategy) {

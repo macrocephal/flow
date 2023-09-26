@@ -1,6 +1,7 @@
-package cloud.macrocephal.flow.core.publisher.internal;
+package cloud.macrocephal.flow.core.publisher.internal.strategy.direct;
 
 import cloud.macrocephal.flow.core.Signal;
+import cloud.macrocephal.flow.core.publisher.internal.strategy.BasePublisherStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Pull;
 

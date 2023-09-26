@@ -1,4 +1,4 @@
-package cloud.macrocephal.flow.core.publisher.internal;
+package cloud.macrocephal.flow.core.publisher.internal.strategy.sharing;
 
 import cloud.macrocephal.flow.core.Signal;
 import cloud.macrocephal.flow.core.Signal.Complete;

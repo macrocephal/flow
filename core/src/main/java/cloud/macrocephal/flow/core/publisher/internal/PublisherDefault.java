@@ -1,6 +1,10 @@
 package cloud.macrocephal.flow.core.publisher.internal;
 
 import cloud.macrocephal.flow.core.publisher.Operator;
+import cloud.macrocephal.flow.core.publisher.internal.strategy.direct.DirectPullPublisherStrategy;
+import cloud.macrocephal.flow.core.publisher.internal.strategy.direct.DirectPushPublisherStrategy;
+import cloud.macrocephal.flow.core.publisher.internal.strategy.sharing.SharingPullPublisherStrategy;
+import cloud.macrocephal.flow.core.publisher.internal.strategy.sharing.SharingPushPublisherStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Pull;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Push;
