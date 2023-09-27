@@ -1,6 +1,6 @@
 package cloud.macrocephal.flow.core.publisher.internal;
 
-import cloud.macrocephal.flow.core.publisher.Operator;
+import cloud.macrocephal.flow.core.operator.Operator;
 import cloud.macrocephal.flow.core.publisher.internal.strategy.direct.DirectPullPublisherStrategy;
 import cloud.macrocephal.flow.core.publisher.internal.strategy.direct.DirectPushPublisherStrategy;
 import cloud.macrocephal.flow.core.publisher.internal.strategy.sharing.SharingPullPublisherStrategy;
@@ -19,6 +19,10 @@ import static java.util.Objects.requireNonNull;
 public class PublisherDefault<T> implements Publisher<T> {
     private final Publisher<T> strategy;
 
+    protected PublisherDefault(Publisher<T> publisher) {
+        strategy = requireNonNull(publisher);
+    }
+
     protected PublisherDefault(PublisherStrategy<T> publisherStrategy) {
         strategy = switch (requireNonNull(publisherStrategy)) {
             case Pull<T> pull -> isNull(pull.capacity()) || 0 < pull.capacity().compareTo(ZERO)
@@ -35,7 +39,7 @@ public class PublisherDefault<T> implements Publisher<T> {
         strategy.subscribe(subscriber);
     }
 
-    protected <U, P extends Publisher<U>> P pipe(Operator<T, U, P> operator) {
+    protected <P extends Publisher<?>> P pipe(Operator<T, P> operator) {
         return operator.apply(this);
     }
 }

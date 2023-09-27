@@ -25,8 +25,8 @@ Usage:
 import cloud.macrocephal.flow.core.OldSingle;
 import cloud.macrocephal.flow.core.OldSwarm;
 
-import static cloud.macrocephal.flow.core.publisher.Operator.map;
-import static cloud.macrocephal.flow.core.publisher.Operator.flatMap;
+import static cloud.macrocephal.flow.core.operator.Operator.map;
+import static cloud.macrocephal.flow.core.operator.Operator.flatMap;
 
 Single.from(randomUUID())                       // [1] Create a Single of UUID
         .pipe(map(UUID::toString))              // [2] Transform it to a String
@@ -41,8 +41,8 @@ More control:
 import cloud.macrocephal.flow.core.OldSwarm;
 import cloud.macrocephal.flow.core.Signal;
 
-import static cloud.macrocephal.flow.core.publisher.Operator.map;
-import static cloud.macrocephal.flow.core.publisher.Operator.flatMap;
+import static cloud.macrocephal.flow.core.operator.Operator.map;
+import static cloud.macrocephal.flow.core.operator.Operator.flatMap;
 
 final var publish=new AtomicReference<Consumer<Signal<UUID>>>();
 final var uuids=new Swarm<UUID>(publish::set);
