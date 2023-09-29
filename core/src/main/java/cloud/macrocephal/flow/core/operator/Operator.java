@@ -31,4 +31,8 @@ public interface Operator<T, O extends Publisher<?>> {
     static <T, U> Operator<T, Swarm<U>> map(Function<T, U> mapper) {
         return new MapOperator<>(mapper);
     }
+
+    static <T, U> Operator<T, Swarm<U>> flatMap(Function<T, Publisher<U>> flatMapper) {
+        return new FlatMapOperator<>(flatMapper);
+    }
 }
