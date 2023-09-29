@@ -31,7 +31,7 @@ public class DirectPushPublisherStrategy<T> extends BasePublisherStrategy<T> {
                 final var ignoredBackPressureStrategy,
                 final var pushConsumer
         ) && capacity.compareTo(ZERO) <= 0) {
-            this.pushConsumer = requireNonNull(pushConsumer);
+            this.pushConsumer = pushConsumer;
             this.cold = !hot;
 
             if (hot) {

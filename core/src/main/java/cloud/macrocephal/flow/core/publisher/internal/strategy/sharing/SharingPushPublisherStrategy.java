@@ -35,8 +35,8 @@ public class SharingPushPublisherStrategy<T> extends BaseSharingPublisherStrateg
                 final var backPressureStrategy,
                 final var pushConsumer
         ) && (isNull(capacity) || 0 < capacity.compareTo(ZERO))) {
-            this.backPressureStrategy = requireNonNull(backPressureStrategy);
-            this.pushConsumer = requireNonNull(pushConsumer);
+            this.backPressureStrategy = backPressureStrategy;
+            this.pushConsumer = pushConsumer;
             this.cold = !hot;
 
             if (hot) {

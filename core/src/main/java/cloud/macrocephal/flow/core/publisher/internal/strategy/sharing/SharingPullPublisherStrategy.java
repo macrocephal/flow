@@ -22,7 +22,6 @@ import static cloud.macrocephal.flow.core.buffer.Buffer.from;
 import static java.lang.Long.MAX_VALUE;
 import static java.lang.Math.max;
 import static java.math.BigInteger.ZERO;
-import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.Spliterator.ORDERED;
@@ -42,9 +41,9 @@ public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrateg
                 final var capacity,
                 final var lagStrategy,
                 final var pullerFactory
-        ) && (isNull(capacity) || 0 < capacity.compareTo(ZERO))) {
-            this.pullerFactory = requireNonNull(pullerFactory);
-            this.lagStrategy = requireNonNull(lagStrategy);
+        ) && (0 < capacity.compareTo(ZERO))) {
+            this.pullerFactory = pullerFactory;
+            this.lagStrategy = lagStrategy;
         } else {
             throw new IllegalArgumentException("%s not accepted here.".formatted(publisherStrategy));
         }

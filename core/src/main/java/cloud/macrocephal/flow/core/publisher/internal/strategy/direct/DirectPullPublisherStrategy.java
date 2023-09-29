@@ -21,7 +21,7 @@ public class DirectPullPublisherStrategy<T> extends BasePublisherStrategy<T> {
     public DirectPullPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
         super(publisherStrategy);
         if (publisherStrategy instanceof Pull<T> pull && pull.capacity().compareTo(ZERO) <= 0) {
-            this.pullerFactory = requireNonNull(pull.pullerFactory());
+            this.pullerFactory = pull.pullerFactory();
         } else {
             throw new IllegalArgumentException("%s not accepted here.".formatted(publisherStrategy));
         }
