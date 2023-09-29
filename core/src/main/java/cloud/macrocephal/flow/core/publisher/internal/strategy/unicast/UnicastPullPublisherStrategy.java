@@ -1,4 +1,4 @@
-package cloud.macrocephal.flow.core.publisher.internal.strategy.direct;
+package cloud.macrocephal.flow.core.publisher.internal.strategy.unicast;
 
 import cloud.macrocephal.flow.core.Signal;
 import cloud.macrocephal.flow.core.publisher.internal.strategy.BasePublisherStrategy;
@@ -15,10 +15,10 @@ import static java.lang.Math.max;
 import static java.math.BigInteger.ZERO;
 import static java.util.Objects.requireNonNull;
 
-public class DirectPullPublisherStrategy<T> extends BasePublisherStrategy<T> {
+public class UnicastPullPublisherStrategy<T> extends BasePublisherStrategy<T> {
     private final Supplier<LongFunction<Stream<Signal<T>>>> pullerFactory;
 
-    public DirectPullPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
+    public UnicastPullPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
         super(publisherStrategy);
         if (publisherStrategy instanceof Pull<T> pull && pull.capacity().compareTo(ZERO) <= 0) {
             this.pullerFactory = pull.pullerFactory();
@@ -34,12 +34,12 @@ public class DirectPullPublisherStrategy<T> extends BasePublisherStrategy<T> {
             subscriber.onSubscribe(new Subscription() {
                 @Override
                 public void request(long n) {
-                    DirectPullPublisherStrategy.this.request(puller, subscriber, n);
+                    UnicastPullPublisherStrategy.this.request(puller, subscriber, n);
                 }
 
                 @Override
                 public void cancel() {
-                    DirectPullPublisherStrategy.this.cancel(subscriber);
+                    UnicastPullPublisherStrategy.this.cancel(subscriber);
                 }
             });
         }

@@ -1,10 +1,10 @@
 package cloud.macrocephal.flow.core.publisher.internal;
 
 import cloud.macrocephal.flow.core.operator.Operator;
-import cloud.macrocephal.flow.core.publisher.internal.strategy.direct.DirectPullPublisherStrategy;
-import cloud.macrocephal.flow.core.publisher.internal.strategy.direct.DirectPushPublisherStrategy;
-import cloud.macrocephal.flow.core.publisher.internal.strategy.sharing.SharingPullPublisherStrategy;
-import cloud.macrocephal.flow.core.publisher.internal.strategy.sharing.SharingPushPublisherStrategy;
+import cloud.macrocephal.flow.core.publisher.internal.strategy.unicast.UnicastPullPublisherStrategy;
+import cloud.macrocephal.flow.core.publisher.internal.strategy.unicast.UnicastPushPublisherStrategy;
+import cloud.macrocephal.flow.core.publisher.internal.strategy.multicast.MulticastPullPublisherStrategy;
+import cloud.macrocephal.flow.core.publisher.internal.strategy.multicast.MulticastPushPublisherStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Pull;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Push;
@@ -25,11 +25,11 @@ public class PublisherDefault<T> implements Publisher<T> {
     protected PublisherDefault(PublisherStrategy<T> publisherStrategy) {
         strategy = switch (publisherStrategy) {
             case Pull<T> pull -> 0 < pull.capacity().compareTo(ZERO)
-                    ? new SharingPullPublisherStrategy<>(publisherStrategy)
-                    : new DirectPullPublisherStrategy<>(publisherStrategy);
+                    ? new MulticastPullPublisherStrategy<>(publisherStrategy)
+                    : new UnicastPullPublisherStrategy<>(publisherStrategy);
             case Push<T> push -> 0 < push.capacity().compareTo(ZERO)
-                    ? new SharingPushPublisherStrategy<>(publisherStrategy)
-                    : new DirectPushPublisherStrategy<>(publisherStrategy);
+                    ? new MulticastPushPublisherStrategy<>(publisherStrategy)
+                    : new UnicastPushPublisherStrategy<>(publisherStrategy);
         };
     }
 

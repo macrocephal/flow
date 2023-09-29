@@ -1,4 +1,4 @@
-package cloud.macrocephal.flow.core.publisher.internal.strategy.direct;
+package cloud.macrocephal.flow.core.publisher.internal.strategy.unicast;
 
 import cloud.macrocephal.flow.core.Signal;
 import cloud.macrocephal.flow.core.Signal.Complete;
@@ -16,13 +16,13 @@ import java.util.function.Function;
 import static java.math.BigInteger.ZERO;
 import static java.util.Objects.requireNonNull;
 
-public class DirectPushPublisherStrategy<T> extends BasePublisherStrategy<T> {
+public class UnicastPushPublisherStrategy<T> extends BasePublisherStrategy<T> {
     private final Consumer<Function<Signal<T>, Boolean>> pushConsumer;
     private boolean coldPushBasedPublisherTriggerred;
     private boolean active = true;
     private final boolean cold;
 
-    public DirectPushPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
+    public UnicastPushPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
         super(publisherStrategy);
         //noinspection PatternVariableHidesField
         if (publisherStrategy instanceof Push(
@@ -57,7 +57,7 @@ public class DirectPushPublisherStrategy<T> extends BasePublisherStrategy<T> {
 
                 @Override
                 public void cancel() {
-                    DirectPushPublisherStrategy.this.cancel(subscriber);
+                    UnicastPushPublisherStrategy.this.cancel(subscriber);
                 }
             });
         }

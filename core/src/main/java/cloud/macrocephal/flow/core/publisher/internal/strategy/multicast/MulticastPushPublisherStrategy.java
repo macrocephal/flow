@@ -1,4 +1,4 @@
-package cloud.macrocephal.flow.core.publisher.internal.strategy.sharing;
+package cloud.macrocephal.flow.core.publisher.internal.strategy.multicast;
 
 import cloud.macrocephal.flow.core.Signal;
 import cloud.macrocephal.flow.core.Signal.Complete;
@@ -20,13 +20,13 @@ import static java.math.BigInteger.ZERO;
 import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 
-public class SharingPushPublisherStrategy<T> extends BaseSharingPublisherStrategy<T> {
+public class MulticastPushPublisherStrategy<T> extends BaseMulticastPublisherStrategy<T> {
     private final Consumer<Function<Signal<T>, Boolean>> pushConsumer;
     private final BackPressureStrategy backPressureStrategy;
     private boolean coldPushBasedPublisherTriggerred;
     private final boolean cold;
 
-    public SharingPushPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
+    public MulticastPushPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
         super(publisherStrategy);
         //noinspection PatternVariableHidesField
         if (publisherStrategy instanceof Push<T>(
@@ -58,12 +58,12 @@ public class SharingPushPublisherStrategy<T> extends BaseSharingPublisherStrateg
             subscriber.onSubscribe(new Flow.Subscription() {
                 @Override
                 public void request(long n) {
-                    SharingPushPublisherStrategy.this.request(subscriber, n);
+                    MulticastPushPublisherStrategy.this.request(subscriber, n);
                 }
 
                 @Override
                 public void cancel() {
-                    SharingPushPublisherStrategy.this.cancel(subscriber);
+                    MulticastPushPublisherStrategy.this.cancel(subscriber);
                 }
             });
         }

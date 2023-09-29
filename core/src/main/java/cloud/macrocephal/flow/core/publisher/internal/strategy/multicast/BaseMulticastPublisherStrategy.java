@@ -1,4 +1,4 @@
-package cloud.macrocephal.flow.core.publisher.internal.strategy.sharing;
+package cloud.macrocephal.flow.core.publisher.internal.strategy.multicast;
 
 import cloud.macrocephal.flow.core.buffer.Buffer;
 import cloud.macrocephal.flow.core.publisher.internal.strategy.BasePublisherStrategy;
@@ -12,14 +12,14 @@ import java.util.concurrent.Flow.Subscriber;
 import static java.math.BigInteger.ZERO;
 import static java.util.Objects.isNull;
 
-public abstract class BaseSharingPublisherStrategy<T> extends BasePublisherStrategy<T> {
+public abstract class BaseMulticastPublisherStrategy<T> extends BasePublisherStrategy<T> {
     protected final Buffer<Entry<T>> entries = Buffer.of();
     protected final BigInteger capacity;
     protected boolean active = true;
     protected boolean completed;
     protected Throwable error;
 
-    protected BaseSharingPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
+    protected BaseMulticastPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
         super(publisherStrategy);
         switch (publisherStrategy) {
             case Pull<T> pull when isNull(pull.capacity()) || 0 < pull.capacity().compareTo(ZERO) ->

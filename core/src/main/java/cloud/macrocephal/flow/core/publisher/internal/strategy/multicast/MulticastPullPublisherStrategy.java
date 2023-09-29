@@ -1,4 +1,4 @@
-package cloud.macrocephal.flow.core.publisher.internal.strategy.sharing;
+package cloud.macrocephal.flow.core.publisher.internal.strategy.multicast;
 
 import cloud.macrocephal.flow.core.Signal;
 import cloud.macrocephal.flow.core.Signal.Complete;
@@ -29,12 +29,12 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Stream.concat;
 import static java.util.stream.StreamSupport.stream;
 
-public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrategy<T> {
+public class MulticastPullPublisherStrategy<T> extends BaseMulticastPublisherStrategy<T> {
     private final Supplier<LongFunction<Stream<Signal<T>>>> pullerFactory;
     private LongFunction<Stream<Signal<T>>> puller;
     private final LagStrategy lagStrategy;
 
-    public SharingPullPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
+    public MulticastPullPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
         super(publisherStrategy);
         //noinspection PatternVariableHidesField
         if (publisherStrategy instanceof Pull(
@@ -55,12 +55,12 @@ public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrateg
             subscriber.onSubscribe(new Subscription() {
                 @Override
                 public void request(long n) {
-                    SharingPullPublisherStrategy.this.request(subscriber, n);
+                    MulticastPullPublisherStrategy.this.request(subscriber, n);
                 }
 
                 @Override
                 public void cancel() {
-                    SharingPullPublisherStrategy.this.cancel(subscriber);
+                    MulticastPullPublisherStrategy.this.cancel(subscriber);
                 }
             });
         }
@@ -138,7 +138,7 @@ public class SharingPullPublisherStrategy<T> extends BaseSharingPublisherStrateg
                                                 error(subscriber, new LagException(subscriber, self)));
                                         return true;
                                     }
-                                    case THROW -> throw new LagException(null, SharingPullPublisherStrategy.this);
+                                    case THROW -> throw new LagException(null, MulticastPullPublisherStrategy.this);
                                 }
                                 return false;
                             }
