@@ -22,6 +22,7 @@ import static cloud.macrocephal.flow.core.buffer.Buffer.from;
 import static java.lang.Long.MAX_VALUE;
 import static java.lang.Math.max;
 import static java.math.BigInteger.ZERO;
+import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.Spliterator.ORDERED;
@@ -41,7 +42,7 @@ public class MulticastPullPublisherStrategy<T> extends BaseMulticastPublisherStr
                 final var capacity,
                 final var lagStrategy,
                 final var pullerFactory
-        ) && (0 < capacity.compareTo(ZERO))) {
+        ) && (isNull(capacity) || 0 < capacity.compareTo(ZERO))) {
             this.pullerFactory = pullerFactory;
             this.lagStrategy = lagStrategy;
         } else {

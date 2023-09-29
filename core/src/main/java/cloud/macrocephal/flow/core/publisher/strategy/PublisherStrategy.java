@@ -21,14 +21,19 @@ public sealed interface PublisherStrategy<T> permits PublisherStrategy.Push, Pub
                    LagStrategy lagStrategy,
                    Supplier<LongFunction<Stream<Signal<T>>>> pullerFactory) implements PublisherStrategy<T> {
         public Pull {
-            requireNonNull(capacity);
             requireNonNull(lagStrategy);
             requireNonNull(pullerFactory);
         }
 
+        public Pull(long capacity,
+                    LagStrategy lagStrategy,
+                    Supplier<LongFunction<Stream<Signal<T>>>> pullerFactory) {
+            this(valueOf(capacity), lagStrategy, pullerFactory);
+        }
+
         public Pull(LagStrategy lagStrategy,
                     Supplier<LongFunction<Stream<Signal<T>>>> pullerFactory) {
-            this(valueOf(defaultBufferSize()), lagStrategy, pullerFactory);
+            this(defaultBufferSize(), lagStrategy, pullerFactory);
         }
 
         public Pull(Supplier<LongFunction<Stream<Signal<T>>>> pullerFactory) {
@@ -41,15 +46,21 @@ public sealed interface PublisherStrategy<T> permits PublisherStrategy.Push, Pub
                    BackPressureStrategy backPressureStrategy,
                    Consumer<Function<Signal<T>, Boolean>> pushConsumer) implements PublisherStrategy<T> {
         public Push {
-            requireNonNull(capacity);
             requireNonNull(pushConsumer);
             requireNonNull(backPressureStrategy);
         }
 
         public Push(boolean hot,
+                    long capacity,
                     BackPressureStrategy backPressureStrategy,
                     Consumer<Function<Signal<T>, Boolean>> pushConsumer) {
-            this(hot, valueOf(defaultBufferSize()), backPressureStrategy, pushConsumer);
+            this(hot, valueOf(capacity), backPressureStrategy, pushConsumer);
+        }
+
+        public Push(boolean hot,
+                    BackPressureStrategy backPressureStrategy,
+                    Consumer<Function<Signal<T>, Boolean>> pushConsumer) {
+            this(hot, defaultBufferSize(), backPressureStrategy, pushConsumer);
         }
 
         public Push(boolean hot, Consumer<Function<Signal<T>, Boolean>> pushConsumer) {
