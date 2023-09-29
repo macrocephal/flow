@@ -146,14 +146,22 @@ public class BufferDefault<T> implements Buffer<T> {
                     current = nextMethodCalled ? current.next : first;
                     nextMethodCalled = true;
                     removed = false;
-                    return current.value;
-                } else {
-                    if (!decrementedIteratorCount) {
-                        decrementedIteratorCount = true;
-                        iteratorCount.decrementAndGet();
+
+                    if (!hasNext()) {
+                        tryDecrement();
                     }
 
+                    return current.value;
+                } else {
+                    tryDecrement();
                     throw new NoSuchElementException();
+                }
+            }
+
+            private void tryDecrement() {
+                if (!decrementedIteratorCount) {
+                    decrementedIteratorCount = true;
+                    iteratorCount.decrementAndGet();
                 }
             }
         };

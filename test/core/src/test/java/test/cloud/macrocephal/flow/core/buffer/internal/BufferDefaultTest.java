@@ -181,4 +181,13 @@ public class BufferDefaultTest {
             assertThat(buffer.isEmpty()).isFalse();
         });
     }
+
+    @Test
+    void iterator_count_is_eagerly_decremented() {
+        of(Buffer.of(), Buffer.of(valueOf(8)), Buffer.of(null)).forEach(buffer -> {
+            of(-3, -2, -1, 0, 1, 2, 3).forEachOrdered(buffer::add);
+            buffer.iterator().forEachRemaining(identity()::apply);
+            assertThat(buffer.add(null)).isTrue();
+        });
+    }
 }
