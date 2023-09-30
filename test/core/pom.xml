@@ -20,6 +20,11 @@
             <artifactId>flow-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.reactivestreams</groupId>
+            <artifactId>reactive-streams-tck-flow</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>cloud.macrocephal</groupId>
             <artifactId>test-flow-base</artifactId>
             <scope>test</scope>

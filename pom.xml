@@ -42,6 +42,13 @@
                 <scope>test</scope>
             </dependency>
 
+            <!-- TESTING:tck -->
+            <dependency>
+                <groupId>org.reactivestreams</groupId>
+                <artifactId>reactive-streams-tck-flow</artifactId>
+                <version>1.0.4</version>
+                <scope>test</scope>
+            </dependency>
             <!-- TESTING:direct -->
             <dependency>
                 <groupId>org.testng</groupId>
