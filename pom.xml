@@ -14,7 +14,6 @@
     <modules>
         <module>test</module>
         <module>core</module>
-        <module>shade</module>
     </modules>
 
     <properties>
@@ -42,14 +41,19 @@
                 <version>${revision}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>cloud.macrocephal</groupId>
+                <artifactId>shade-flow-reactive-streams-tck-flow</artifactId>
+                <version>${revision}</version>
+            </dependency>
 
             <!-- TESTING:tck -->
             <dependency>
                 <groupId>org.reactivestreams</groupId>
                 <artifactId>reactive-streams-tck-flow</artifactId>
                 <version>1.0.4</version>
-                <scope>test</scope>
             </dependency>
+
             <!-- TESTING:direct -->
             <dependency>
                 <groupId>org.testng</groupId>
@@ -124,6 +128,11 @@
                 <plugin>
                     <artifactId>maven-deploy-plugin</artifactId>
                     <version>3.1.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>3.5.1</version>
                 </plugin>
                 <!-- site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle -->
                 <plugin>
