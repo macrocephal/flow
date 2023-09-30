@@ -1,7 +1,7 @@
 package test.cloud.macrocephal.flow.core.buffer.internal;
 
 import cloud.macrocephal.flow.core.buffer.Buffer;
-import org.junit.jupiter.api.Test;
+import org.testng.annotations.Test;
 
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
@@ -12,7 +12,7 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.testng.Assert.assertThrows;
 
 public class BufferDefaultTest {
     @Test
