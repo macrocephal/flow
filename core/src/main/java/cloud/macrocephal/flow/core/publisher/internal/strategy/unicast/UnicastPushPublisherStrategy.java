@@ -45,11 +45,6 @@ public class UnicastPushPublisherStrategy<T> extends BasePublisherStrategy<T> {
     @Override
     synchronized public void subscribe(Subscriber<? super T> subscriber) {
         if (active && !subscribers.contains(subscriber) && subscribers.add(subscriber)) {
-            if (cold && !coldPushBasedPublisherTriggerred) {
-                coldPushBasedPublisherTriggerred = true;
-                pushConsumer.accept(this::push);
-            }
-
             subscriber.onSubscribe(new Subscription() {
                 @Override
                 public void request(long n) {
@@ -60,6 +55,11 @@ public class UnicastPushPublisherStrategy<T> extends BasePublisherStrategy<T> {
                     UnicastPushPublisherStrategy.this.cancel(subscriber);
                 }
             });
+
+            if (cold && !coldPushBasedPublisherTriggerred) {
+                coldPushBasedPublisherTriggerred = true;
+                pushConsumer.accept(this::push);
+            }
         }
     }
 

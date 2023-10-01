@@ -2,11 +2,11 @@ package cloud.macrocephal.flow.core.publisher.internal.strategy.unicast;
 
 import cloud.macrocephal.flow.core.Signal;
 import cloud.macrocephal.flow.core.publisher.internal.strategy.BasePublisherStrategy;
+import cloud.macrocephal.flow.core.publisher.internal.strategy.Spec303Subscription;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Pull;
 
 import java.util.concurrent.Flow.Subscriber;
-import java.util.concurrent.Flow.Subscription;
 import java.util.function.LongFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -31,17 +31,10 @@ public class UnicastPullPublisherStrategy<T> extends BasePublisherStrategy<T> {
     synchronized public void subscribe(Subscriber<? super T> subscriber) {
         if (!subscribers.contains(subscriber) && subscribers.add(subscriber)) {
             final var puller = requireNonNull(pullerFactory.get());
-            subscriber.onSubscribe(new Subscription() {
-                @Override
-                public void request(long n) {
-                    UnicastPullPublisherStrategy.this.request(puller, subscriber, n);
-                }
-
-                @Override
-                public void cancel() {
-                    UnicastPullPublisherStrategy.this.cancel(subscriber);
-                }
-            });
+            subscriber.onSubscribe(new Spec303Subscription<T>(
+                    subscriber,
+                    UnicastPullPublisherStrategy.this::cancel,
+                    n -> UnicastPullPublisherStrategy.this.request(puller, subscriber, n)));
         }
     }
 
@@ -55,8 +48,8 @@ public class UnicastPullPublisherStrategy<T> extends BasePublisherStrategy<T> {
             final var iterator = response.iterator();
 
             while (iterator.hasNext()) {
-                switch (iterator.next()) {
-                    case Signal.Value(var value) when 0 < counter$[0] -> {
+                switch (requireNonNull(iterator.next())) {
+                    case Signal.Value(var value) -> {
                         final var next = requireNonNull(value);
                         subscriber.onNext(next);
                         --counter$[0];

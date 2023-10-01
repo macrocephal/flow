@@ -69,7 +69,7 @@ public class BufferDefault<T> implements Buffer<T> {
 
     synchronized public boolean add(T value) {
         if (isNull(capacity) || 0 < capacity.compareTo(size)) {
-            if (0 < iteratorCount.get()) {
+            if (1 < iteratorCount.get()) {
                 throw new ConcurrentModificationException();
             } else if (isNull(first)) {
                 first = new Node<>(null, value, null);

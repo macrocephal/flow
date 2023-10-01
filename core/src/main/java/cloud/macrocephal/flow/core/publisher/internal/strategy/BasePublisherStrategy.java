@@ -16,13 +16,13 @@ public abstract class BasePublisherStrategy<T> implements Publisher<T> {
     }
 
     synchronized protected void error(Subscriber<? super T> subscriber, Throwable throwable) {
-        subscriber.onError(throwable);
         cancel(subscriber);
+        subscriber.onError(throwable);
     }
 
     synchronized protected void complete(Subscriber<? super T> subscriber) {
-        subscriber.onComplete();
         cancel(subscriber);
+        subscriber.onComplete();
     }
 
     synchronized protected void cancel(Subscriber<? super T> subscriber) {
