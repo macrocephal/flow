@@ -1,5 +1,6 @@
 package cloud.macrocephal.flow.core.publisher.internal.strategy;
 
+import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Flow.Subscriber;
@@ -7,6 +8,9 @@ import java.util.concurrent.Flow.Subscription;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
+import static java.lang.Long.MAX_VALUE;
+import static java.math.BigInteger.ZERO;
+import static java.math.BigInteger.valueOf;
 import static java.util.Objects.requireNonNull;
 
 public record Spec303Subscription<T>(Subscriber<? super T> subscriber,
@@ -37,7 +41,12 @@ public record Spec303Subscription<T>(Subscriber<? super T> subscriber,
             requests.removeFirst();
 
             if (!requests.isEmpty()) {
-                n = requests.stream().mapToLong(Long::valueOf).sum();
+                n = requests.stream()
+                        .map(BigInteger::valueOf)
+                        .reduce(ZERO, BigInteger::add)
+                        .min(valueOf(MAX_VALUE))
+                        .longValue();
+                System.out.println("@@@ " + n);
                 requests.clear();
                 request(n);
             }

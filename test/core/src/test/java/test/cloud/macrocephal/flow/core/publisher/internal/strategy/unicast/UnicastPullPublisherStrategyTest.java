@@ -32,8 +32,7 @@ public class UnicastPullPublisherStrategyTest extends FlowPublisherVerification<
 
     @Override
     public Publisher<UUID> createFlowPublisher(long limit) {
-        // TODO: research, understand SPECS317 and remove this hack value of 1116
-        final var limit$ = Long.MAX_VALUE == limit ? null : new AtomicLong(min(1116,limit));
+        final var limit$ = Long.MAX_VALUE == limit ? null : new AtomicLong(limit);
         return new Swarm<>(new Pull<>(0, LagStrategy.THROW, () ->
                 request -> stream(new AbstractSpliterator<>(max(0, min(limit, request)), ORDERED) {
                     private long counter = isNull(limit$) ? request : min(request, limit$.get());
