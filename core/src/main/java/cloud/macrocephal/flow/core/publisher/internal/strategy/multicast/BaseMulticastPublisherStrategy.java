@@ -11,6 +11,7 @@ import java.util.concurrent.Flow.Subscriber;
 
 import static java.math.BigInteger.ZERO;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 public abstract class BaseMulticastPublisherStrategy<T> extends BasePublisherStrategy<T> {
     protected final Buffer<Entry<T>> entries = Buffer.of();
@@ -47,7 +48,7 @@ public abstract class BaseMulticastPublisherStrategy<T> extends BasePublisherStr
         if (completed) {
             complete(subscriber);
             return false;
-        } else if (!isNull(error)) {
+        } else if (nonNull(error)) {
             error(subscriber, error);
             return false;
         } else {
@@ -69,7 +70,7 @@ public abstract class BaseMulticastPublisherStrategy<T> extends BasePublisherStr
         }
     }
 
-    protected boolean isBufferFullToCapacity() {
+    protected boolean isBufferFullCapacity() {
         return !isNull(capacity) && capacity.compareTo(entries.size()) < 0;
     }
 

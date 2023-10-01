@@ -30,7 +30,7 @@ public class UnicastPushPublisherStrategy<T> extends BasePublisherStrategy<T> {
                 final var capacity,
                 final var ignoredBackPressureStrategy,
                 final var pushConsumer
-        ) && capacity.compareTo(ZERO) <= 0) {
+        ) && 0 <= ZERO.compareTo(capacity)) {
             this.pushConsumer = pushConsumer;
             this.cold = !hot;
 

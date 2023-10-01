@@ -20,7 +20,7 @@ public class UnicastPullPublisherStrategy<T> extends BasePublisherStrategy<T> {
 
     public UnicastPullPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
         super(publisherStrategy);
-        if (publisherStrategy instanceof Pull<T> pull && pull.capacity().compareTo(ZERO) <= 0) {
+        if (publisherStrategy instanceof Pull<T> pull && 0 <= ZERO.compareTo(pull.capacity())) {
             this.pullerFactory = pull.pullerFactory();
         } else {
             throw new IllegalArgumentException("%s not accepted here.".formatted(publisherStrategy));

@@ -13,7 +13,6 @@ import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Pull;
 import java.util.Iterator;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.concurrent.Flow.Subscriber;
-import java.util.concurrent.Flow.Subscription;
 import java.util.function.Consumer;
 import java.util.function.LongFunction;
 import java.util.function.Supplier;
@@ -117,7 +116,7 @@ public class MulticastPullPublisherStrategy<T> extends BaseMulticastPublisherStr
 
                             --counter$[0];
                             action.accept(next);
-                            if (isBufferFullToCapacity()) {
+                            if (isBufferFullCapacity()) {
                                 entries.add(new Entry<>(next, from(subscribers)));
                                 return true;
                             } else {

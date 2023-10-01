@@ -5,12 +5,13 @@ import cloud.macrocephal.flow.core.Signal.Complete;
 import cloud.macrocephal.flow.core.Signal.Error;
 import cloud.macrocephal.flow.core.Signal.Value;
 import cloud.macrocephal.flow.core.exception.BackPressureException;
+import cloud.macrocephal.flow.core.publisher.internal.strategy.Spec303Subscription;
 import cloud.macrocephal.flow.core.publisher.strategy.BackPressureStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Push;
 
-import java.util.concurrent.Flow;
 import java.util.concurrent.Flow.Subscriber;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -55,24 +56,16 @@ public class MulticastPushPublisherStrategy<T> extends BaseMulticastPublisherStr
                 pushConsumer.accept(this::push);
             }
 
-            subscriber.onSubscribe(new Flow.Subscription() {
-                @Override
-                public void request(long n) {
-                    MulticastPushPublisherStrategy.this.request(subscriber, n);
-                }
-
-                @Override
-                public void cancel() {
-                    MulticastPushPublisherStrategy.this.cancel(subscriber);
-                }
-            });
+            subscriber.onSubscribe(new Spec303Subscription<T>(subscriber,
+                    MulticastPushPublisherStrategy.this::cancel,
+                    n -> MulticastPushPublisherStrategy.this.request(subscriber, n)));
         }
     }
 
     synchronized private void request(Subscriber<? super T> subscriber, long n) {
         final var counter$ = new long[]{max(0, n)};
 
-        if (active && subscribers.contains(subscriber) && tryAdvance(subscriber)) {
+        if (subscribers.contains(subscriber)) {
             final var iterator = entries.iterator();
             //noinspection PatternVariableHidesField
             while (0 < counter$[0] &&
@@ -88,7 +81,13 @@ public class MulticastPushPublisherStrategy<T> extends BaseMulticastPublisherStr
                 }
             }
 
-            iterator.forEachRemaining(this::noop);
+            final var stillGotLeftOver = new AtomicBoolean();
+            iterator.forEachRemaining(entry ->
+                    stillGotLeftOver.set(stillGotLeftOver.get() || entry.subscribers().contains(subscriber)));
+
+            if (!stillGotLeftOver.get()) {
+                tryAdvance(subscriber);
+            }
         }
     }
 
@@ -102,9 +101,7 @@ public class MulticastPushPublisherStrategy<T> extends BaseMulticastPublisherStr
                 case Value(var value) -> {
                     final var next = requireNonNull(value);
 
-                    if (isBufferFullToCapacity()) {
-                        entries.add(new Entry<>(next, from(subscribers)));
-                    } else {
+                    if (isBufferFullCapacity()) {
                         return switch (backPressureStrategy) {
                             case DROP -> true;
                             case FEEDBACK -> null;
@@ -114,6 +111,8 @@ public class MulticastPushPublisherStrategy<T> extends BaseMulticastPublisherStr
                             }
                             case THROW -> throw new BackPressureException(this, capacity);
                         };
+                    } else {
+                        entries.add(new Entry<>(next, from(subscribers)));
                     }
                 }
                 case Complete() -> {
