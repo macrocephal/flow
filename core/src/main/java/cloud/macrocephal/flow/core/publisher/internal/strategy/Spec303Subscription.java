@@ -46,7 +46,6 @@ public record Spec303Subscription<T>(Subscriber<? super T> subscriber,
                         .reduce(ZERO, BigInteger::add)
                         .min(valueOf(MAX_VALUE))
                         .longValue();
-                System.out.println("@@@ " + n);
                 requests.clear();
                 request(n);
             }

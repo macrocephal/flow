@@ -5,6 +5,7 @@ import cloud.macrocephal.flow.core.Signal.Complete;
 import cloud.macrocephal.flow.core.Signal.Error;
 import cloud.macrocephal.flow.core.Signal.Value;
 import cloud.macrocephal.flow.core.exception.LagException;
+import cloud.macrocephal.flow.core.publisher.internal.strategy.Spec303Subscription;
 import cloud.macrocephal.flow.core.publisher.strategy.LagStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Pull;
@@ -53,17 +54,10 @@ public class MulticastPullPublisherStrategy<T> extends BaseMulticastPublisherStr
     @Override
     synchronized public void subscribe(Subscriber<? super T> subscriber) {
         if (active && !subscribers.contains(subscriber) && subscribers.add(subscriber)) {
-            subscriber.onSubscribe(new Subscription() {
-                @Override
-                public void request(long n) {
-                    MulticastPullPublisherStrategy.this.request(subscriber, n);
-                }
-
-                @Override
-                public void cancel() {
-                    MulticastPullPublisherStrategy.this.cancel(subscriber);
-                }
-            });
+            subscriber.onSubscribe(new Spec303Subscription<T>(
+                    subscriber,
+                    MulticastPullPublisherStrategy.this::cancel,
+                    n -> MulticastPullPublisherStrategy.this.request(subscriber, n)));
         }
     }
 
