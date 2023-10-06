@@ -3,10 +3,7 @@ package cloud.macrocephal.flow.core.publisher.strategy;
 import cloud.macrocephal.flow.core.Signal;
 
 import java.math.BigInteger;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.LongFunction;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Stream;
 
 import static cloud.macrocephal.flow.core.publisher.strategy.BackPressureStrategy.FEEDBACK;
@@ -41,30 +38,36 @@ public sealed interface PublisherStrategy<T> permits PublisherStrategy.Push, Pub
         }
     }
 
-    record Push<T>(boolean hot,
+    record Push<T>(boolean cold,
                    BigInteger capacity,
                    BackPressureStrategy backPressureStrategy,
-                   Consumer<Function<Signal<T>, Boolean>> pushConsumer) implements PublisherStrategy<T> {
+                   Consumer<BiConsumer<Signal<T>, BackPressureFeedback>> pushConsumer) implements PublisherStrategy<T> {
         public Push {
             requireNonNull(pushConsumer);
             requireNonNull(backPressureStrategy);
         }
 
-        public Push(boolean hot,
+        public Push(boolean cold,
                     long capacity,
                     BackPressureStrategy backPressureStrategy,
-                    Consumer<Function<Signal<T>, Boolean>> pushConsumer) {
-            this(hot, valueOf(capacity), backPressureStrategy, pushConsumer);
+                    Consumer<BiConsumer<Signal<T>, BackPressureFeedback>> pushConsumer) {
+            this(cold, valueOf(capacity), backPressureStrategy, pushConsumer);
         }
 
-        public Push(boolean hot,
+        public Push(boolean cold,
                     BackPressureStrategy backPressureStrategy,
-                    Consumer<Function<Signal<T>, Boolean>> pushConsumer) {
-            this(hot, defaultBufferSize(), backPressureStrategy, pushConsumer);
+                    Consumer<BiConsumer<Signal<T>, BackPressureFeedback>> pushConsumer) {
+            this(cold, defaultBufferSize(), backPressureStrategy, pushConsumer);
         }
 
-        public Push(boolean hot, Consumer<Function<Signal<T>, Boolean>> pushConsumer) {
-            this(hot, FEEDBACK, pushConsumer);
+        public Push(boolean cold, Consumer<BiConsumer<Signal<T>, BackPressureFeedback>> pushConsumer) {
+            this(cold, FEEDBACK, pushConsumer);
         }
+    }
+
+    interface BackPressureFeedback {
+        void resume();
+        void pause();
+        void stop();
     }
 }
