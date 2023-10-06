@@ -71,7 +71,7 @@ public abstract class BaseMulticastPublisherStrategy<T> extends BasePublisherStr
     }
 
     protected boolean isBufferFullCapacity() {
-        return !isNull(capacity) && capacity.compareTo(entries.size()) < 0;
+        return nonNull(capacity) && capacity.equals(entries.size());
     }
 
     protected record Entry<T>(T value, Buffer<Subscriber<? super T>> subscribers) {
