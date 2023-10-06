@@ -19,8 +19,8 @@ public class BufferDefault<T> implements Buffer<T> {
     private final AtomicLong iteratorCount = new AtomicLong(0);
     private final BigInteger capacity;
     private BigInteger size = ZERO;
-    private Node<T> first;
-    private Node<T> last;
+    protected Node<T> first;
+    protected Node<T> last;
 
     public BufferDefault(BigInteger capacity) {
         this.capacity = capacity;
@@ -70,6 +70,7 @@ public class BufferDefault<T> implements Buffer<T> {
     synchronized public boolean add(T value) {
         if (isNull(capacity) || 0 < capacity.compareTo(size)) {
             if (1 < iteratorCount.get()) {
+                System.out.println("@@@ [%d] @@@".formatted(iteratorCount.get()));
                 throw new ConcurrentModificationException();
             } else if (isNull(first)) {
                 first = new Node<>(null, value, null);
@@ -104,6 +105,12 @@ public class BufferDefault<T> implements Buffer<T> {
             private boolean nextMethodCalled;
             private Node<T> current;
             private boolean removed;
+
+            {
+                if (ZERO.equals(size)) {
+                    tryDecrement();
+                }
+            }
 
             @Override
             public void remove() {
@@ -165,6 +172,17 @@ public class BufferDefault<T> implements Buffer<T> {
                 }
             }
         };
+    }
+
+    public static <T> Buffer<T> from(Buffer<T> source) {
+        if (source instanceof BufferDefault<T> bufferDefault) {
+            return new BufferDefault<>(bufferDefault.capacity) {{
+                first = bufferDefault.first;
+                last = bufferDefault.last;
+            }};
+        } else {
+            return new BufferDefault<>(source);
+        }
     }
 
     private static final class Node<T> {

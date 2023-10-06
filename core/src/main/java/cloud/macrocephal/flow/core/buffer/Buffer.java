@@ -17,7 +17,7 @@ public interface Buffer<T> extends Iterable<T> {
 
     static <T> Buffer<T> from(Buffer<T> buffer) {
         //noinspection RedundantCast
-        return (Buffer<T>) new BufferDefault<>(buffer);
+        return (Buffer<T>) BufferDefault.from(buffer);
     }
 
     static <T> Buffer<T> of(BigInteger capacity) {
