@@ -5,4 +5,5 @@ public enum BackPressureStrategy {
     ERROR,
     THROW,
     DROP,
+    STOP,
 }
