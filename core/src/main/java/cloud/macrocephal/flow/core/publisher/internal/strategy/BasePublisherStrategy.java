@@ -29,7 +29,7 @@ public abstract class BasePublisherStrategy<T> implements Publisher<T> {
         final var iterator = subscribers.iterator();
 
         while (iterator.hasNext()) {
-            if (subscriber == iterator.next()) {
+            if (subscriber.equals(iterator.next())) {
                 iterator.remove();
                 iterator.forEachRemaining(this::noop);
             }
