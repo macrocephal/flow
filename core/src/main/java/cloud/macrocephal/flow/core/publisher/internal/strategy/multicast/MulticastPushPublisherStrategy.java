@@ -1,48 +1,47 @@
 package cloud.macrocephal.flow.core.publisher.internal.strategy.multicast;
 
 import cloud.macrocephal.flow.core.Signal;
-import cloud.macrocephal.flow.core.Signal.Complete;
-import cloud.macrocephal.flow.core.Signal.Error;
-import cloud.macrocephal.flow.core.Signal.Value;
+import cloud.macrocephal.flow.core.buffer.Buffer;
 import cloud.macrocephal.flow.core.exception.BackPressureException;
 import cloud.macrocephal.flow.core.publisher.internal.strategy.Spec303Subscription;
 import cloud.macrocephal.flow.core.publisher.strategy.BackPressureStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy;
+import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.BackPressureFeedback;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Push;
 
+import java.math.BigInteger;
 import java.util.concurrent.Flow.Subscriber;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.Flow.Subscription;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
-import static cloud.macrocephal.flow.core.buffer.Buffer.from;
-import static java.lang.Math.max;
 import static java.math.BigInteger.ZERO;
+import static java.math.BigInteger.valueOf;
 import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
 
 public class MulticastPushPublisherStrategy<T> extends BaseMulticastPublisherStrategy<T> {
-    private final Consumer<Function<Signal<T>, Boolean>> pushConsumer;
+    private final Consumer<BiConsumer<Signal<T>, BackPressureFeedback>> pushConsumer;
     private final BackPressureStrategy backPressureStrategy;
+    private BackPressureFeedback backPressureFeedback;
     private boolean coldPushBasedPublisherTriggerred;
     private final boolean cold;
+    private boolean paused;
 
     public MulticastPushPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
         super(publisherStrategy);
         //noinspection PatternVariableHidesField
         if (publisherStrategy instanceof Push<T>(
-                final var hot,
+                final var cold,
                 final var capacity,
                 final var backPressureStrategy,
                 final var pushConsumer
         ) && (isNull(capacity) || 0 < capacity.compareTo(ZERO))) {
             this.backPressureStrategy = backPressureStrategy;
             this.pushConsumer = pushConsumer;
-            this.cold = !hot;
-
-            if (hot) {
-                pushConsumer.accept(this::push);
-            }
+            this.cold = cold;
         } else {
             throw new IllegalArgumentException("%s not accepted here.".formatted(publisherStrategy));
         }
@@ -50,80 +49,173 @@ public class MulticastPushPublisherStrategy<T> extends BaseMulticastPublisherStr
 
     @Override
     synchronized public void subscribe(Subscriber<? super T> subscriber) {
-        if (active && !subscribers.contains(subscriber) && subscribers.add(subscriber)) {
-            if (cold && !coldPushBasedPublisherTriggerred) {
-                coldPushBasedPublisherTriggerred = true;
-                pushConsumer.accept(this::push);
-            }
-
-            subscriber.onSubscribe(new Spec303Subscription<T>(subscriber,
-                    MulticastPushPublisherStrategy.this::cancel,
-                    n -> MulticastPushPublisherStrategy.this.request(subscriber, n)));
-        }
-    }
-
-    synchronized private void request(Subscriber<? super T> subscriber, long n) {
-        final var counter$ = new long[]{max(0, n)};
-
-        if (subscribers.contains(subscriber)) {
-            final var iterator = entries.iterator();
-            //noinspection PatternVariableHidesField
-            while (0 < counter$[0] &&
-                    iterator.hasNext() &&
-                    iterator.next() instanceof Entry<T>(var value, var subscribers)) {
-                if (subscribers.remove(subscriber)) {
-                    if (subscribers.isEmpty()) {
-                        iterator.remove();
-                    }
-
-                    subscriber.onNext(value);
-                    --counter$[0];
-                }
-            }
-
-            final var stillGotLeftOver = new AtomicBoolean();
-            iterator.forEachRemaining(entry ->
-                    stillGotLeftOver.set(stillGotLeftOver.get() || entry.subscribers().contains(subscriber)));
-
-            if (!stillGotLeftOver.get()) {
-                tryAdvance(subscriber);
-            }
-        }
-    }
-
-    synchronized private Boolean push(Signal<T> signal) {
-        if (active) {
-            switch (requireNonNull(signal)) {
-                case Error(var throwable) -> {
-                    error = throwable;
-                    active = false;
-                }
-                case Value(var value) -> {
-                    final var next = requireNonNull(value);
-
-                    if (isBufferFullCapacity()) {
-                        return switch (backPressureStrategy) {
-                            case DROP -> true;
-                            case FEEDBACK -> null;
-                            case ERROR -> {
-                                push(new Error<>(new BackPressureException(this, capacity)));
-                                yield active;
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized (subscriber) {
+            final var richSubscriber = new RichSubscriber<>(new AtomicReference<>(ZERO), subscriber);
+            if (active && !subscribers.contains(richSubscriber) && subscribers.add(richSubscriber)) {
+                richSubscriber.onSubscribe(new Spec303Subscription<>(
+                        richSubscriber,
+                        ignored -> {
+                            synchronized (MulticastPushPublisherStrategy.this) {
+                                MulticastPushPublisherStrategy.this.cancel(richSubscriber);
                             }
-                            case THROW -> throw new BackPressureException(this, capacity);
-                        };
-                    } else {
-                        entries.add(new Entry<>(next, from(subscribers)));
-                    }
-                }
-                case Complete() -> {
-                    completed = true;
-                    active = false;
+                        },
+                        n -> {
+                            synchronized (MulticastPushPublisherStrategy.this) {
+                                if (subscribers.contains(richSubscriber)) {
+                                    richSubscriber.requested.updateAndGet(valueOf(n)::add);
+
+                                    if (consumeAll(richSubscriber)) {
+                                        tryAdvance(richSubscriber);
+                                    }
+                                }
+
+                                if (cold && !coldPushBasedPublisherTriggerred) {
+                                    coldPushBasedPublisherTriggerred = true;
+                                    startPushing();
+                                }
+                            }
+                        }));
+
+                if (!cold) {
+                    startPushing();
                 }
             }
+        }
+    }
 
-            return true;
-        } else {
-            return false;
+    synchronized private void startPushing() {
+        pushConsumer.accept((signal, feedback) -> {
+            synchronized (MulticastPushPublisherStrategy.this) {
+                backPressureFeedback = feedback;
+
+                switch (requireNonNull(signal)) {
+                    case Signal.Error(var throwable) -> {
+                        active = false;
+                        error = throwable;
+                        ofNullable(feedback).ifPresent(BackPressureFeedback::stop);
+                        Buffer.from(subscribers).forEach(subscriber -> {
+                            if (consumeAll((RichSubscriber<? super T>) subscriber)) {
+                                tryAdvance(subscriber);
+                            }
+                        });
+                    }
+                    case Signal.Value(var value) -> {
+                        final var next = requireNonNull(value);
+
+                        if (isBufferFullCapacity()) {
+                            switch (backPressureStrategy) {
+                                case DROP -> {
+                                }
+                                case STOP -> {
+                                    active = false;
+                                    completed = true;
+                                    ofNullable(feedback).ifPresent(BackPressureFeedback::stop);
+                                    Buffer.from(subscribers).forEach(subscriber -> {
+                                        if (consumeAll((RichSubscriber<? super T>) subscriber)) {
+                                            error(subscriber, error);
+                                        }
+                                    });
+                                }
+                                case FEEDBACK -> {
+                                    ofNullable(feedback).ifPresent(BackPressureFeedback::pause);
+                                    paused = true;
+                                }
+                                case ERROR -> {
+                                    active = false;
+                                    error = new BackPressureException(this, null);
+                                    ofNullable(feedback).ifPresent(BackPressureFeedback::stop);
+                                    Buffer.from(subscribers).forEach(subscriber -> {
+                                        if (consumeAll((RichSubscriber<? super T>) subscriber)) {
+                                            error(subscriber, error);
+                                        }
+                                    });
+                                }
+                                case THROW -> throw new BackPressureException(this, capacity);
+                            }
+                        } else {
+                            entries.add(new Entry<>(next, Buffer.from(subscribers)));
+                            Buffer.from(subscribers).forEach(sub -> consumeAll((RichSubscriber<? super T>) sub));
+                        }
+                    }
+                    case Signal.Complete() -> {
+                        active = false;
+                        completed = true;
+                        ofNullable(feedback).ifPresent(BackPressureFeedback::stop);
+                        Buffer.from(subscribers).forEach(subscriber -> {
+                            if (consumeAll((RichSubscriber<? super T>) subscriber)) {
+                                tryAdvance(subscriber);
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    }
+
+    synchronized private boolean consumeAll(RichSubscriber<? super T> subscriber) {
+        final var iterator = entries.iterator();
+        boolean consumedAll = true;
+
+        while (iterator.hasNext()) {
+            //noinspection PatternVariableHidesField
+            if (iterator.next() instanceof Entry(var value, var subscribers) && subscribers.contains(subscriber)) {
+                if (0 < subscriber.requested.get().compareTo(ZERO)) {
+                    subscriber.requested.updateAndGet(valueOf(-1)::add);
+                    subscribers.remove(subscriber);
+                    subscriber.onNext(value);
+
+                    if (subscribers.isEmpty() && paused) {
+                        paused = false;
+                        ofNullable(backPressureFeedback).ifPresent(BackPressureFeedback::resume);
+                    }
+                } else if (consumedAll) {
+                    consumedAll = false;
+                }
+            }
+        }
+
+        return consumedAll;
+    }
+
+    @SuppressWarnings("ClassCanBeRecord")
+    private static final class RichSubscriber<T> implements Subscriber<T> {
+        private final AtomicReference<BigInteger> requested;
+        private final Subscriber<T> subscriber;
+
+        private RichSubscriber(AtomicReference<BigInteger> requested, Subscriber<T> subscriber) {
+            this.requested = requested;
+            this.subscriber = subscriber;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return this == obj || obj instanceof Subscriber<?> sub && subscriber.equals(sub);
+        }
+
+        @Override
+        public int hashCode() {
+            return subscriber.hashCode();
+        }
+
+        @Override
+        public void onSubscribe(Subscription subscription) {
+            subscriber.onSubscribe(subscription);
+        }
+
+        @Override
+        public void onNext(T item) {
+            subscriber.onNext(item);
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+            subscriber.onError(throwable);
+        }
+
+        @Override
+        public void onComplete() {
+            subscriber.onComplete();
         }
     }
 }
