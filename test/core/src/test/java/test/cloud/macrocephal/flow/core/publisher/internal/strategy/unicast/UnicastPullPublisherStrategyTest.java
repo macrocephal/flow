@@ -4,18 +4,19 @@ import cloud.macrocephal.flow.core.Signal;
 import cloud.macrocephal.flow.core.Signal.Complete;
 import cloud.macrocephal.flow.core.Signal.Value;
 import cloud.macrocephal.flow.core.publisher.Swarm;
-import cloud.macrocephal.flow.core.publisher.strategy.BackPressureStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.LagStrategy;
 import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Pull;
-import cloud.macrocephal.flow.core.publisher.strategy.PublisherStrategy.Push;
 import org.reactivestreams.tck.TestEnvironment;
 import org.reactivestreams.tck.flow.FlowPublisherVerification;
+import org.testng.annotations.BeforeMethod;
 
+import java.lang.reflect.Method;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.UUID;
 import java.util.concurrent.Flow.Publisher;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -28,6 +29,11 @@ import static java.util.stream.StreamSupport.stream;
 public class UnicastPullPublisherStrategyTest extends FlowPublisherVerification<java.util.UUID> {
     public UnicastPullPublisherStrategyTest() {
         super(new TestEnvironment());
+    }
+
+    @BeforeMethod
+    void beforeMethod(Method method) {
+        System.err.println(">>> " + getClass() + '#' + method.getName());
     }
 
     @Override
@@ -58,7 +64,6 @@ public class UnicastPullPublisherStrategyTest extends FlowPublisherVerification<
 
     @Override
     public Publisher<UUID> createFailedFlowPublisher() {
-        return new Swarm<>(new Push<>(false, 0, BackPressureStrategy.THROW,
-                push -> push.apply(new Signal.Error<>(new RuntimeException("Boom!")))));
+        return new Swarm<>(new Pull<>(() -> ignored -> Stream.of(new Signal.Error<>(new RuntimeException("Boom")))));
     }
 }
