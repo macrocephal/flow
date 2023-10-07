@@ -11,8 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.ZERO;
-import static java.util.Objects.isNull;
-import static java.util.Objects.requireNonNull;
+import static java.util.Objects.*;
 import static java.util.function.Function.identity;
 
 public class BufferDefault<T> implements Buffer<T> {
@@ -36,13 +35,14 @@ public class BufferDefault<T> implements Buffer<T> {
 
     @Override
     synchronized public boolean contains(T value) {
-        final var iterator = iterator();
+        var node = first;
 
-        while (iterator.hasNext()) {
-            if (Objects.equals(value, iterator.next())) {
-                iterator.forEachRemaining(identity()::apply);
+        while (nonNull(node)){
+            if (Objects.equals(node.value, value)) {
                 return true;
             }
+
+            node = node.next;
         }
 
         return false;
@@ -70,7 +70,6 @@ public class BufferDefault<T> implements Buffer<T> {
     synchronized public boolean add(T value) {
         if (isNull(capacity) || 0 < capacity.compareTo(size)) {
             if (1 < iteratorCount.get()) {
-                System.out.println("@@@ [%d] @@@".formatted(iteratorCount.get()));
                 throw new ConcurrentModificationException();
             } else if (isNull(first)) {
                 first = new Node<>(null, value, null);
