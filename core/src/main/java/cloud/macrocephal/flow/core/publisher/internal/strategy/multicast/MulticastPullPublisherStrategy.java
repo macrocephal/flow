@@ -52,7 +52,7 @@ public class MulticastPullPublisherStrategy<T> extends BaseMulticastPublisherStr
 
     @Override
     synchronized public void subscribe(Subscriber<? super T> subscriber) {
-        if (active && !subscribers.contains(subscriber) && subscribers.add(subscriber)) {
+        if (!subscribers.contains(subscriber) && subscribers.add(subscriber)) {
             subscriber.onSubscribe(new Spec303Subscription<T>(
                     subscriber,
                     MulticastPullPublisherStrategy.this::cancel,
