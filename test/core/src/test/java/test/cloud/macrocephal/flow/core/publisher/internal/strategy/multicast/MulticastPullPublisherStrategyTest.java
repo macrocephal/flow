@@ -14,6 +14,8 @@ import java.lang.reflect.Method;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.UUID;
 import java.util.concurrent.Flow.Publisher;
+import java.util.concurrent.Flow.Subscriber;
+import java.util.concurrent.Flow.Subscription;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -64,6 +66,26 @@ public class MulticastPullPublisherStrategyTest extends FlowPublisherVerificatio
 
     @Override
     public Publisher<UUID> createFailedFlowPublisher() {
-        return new Swarm<>(new Pull<>(() -> ignored -> Stream.of(new Signal.Error<>(new RuntimeException("Boom")))));
+        final var boom = new Swarm<UUID>(new Pull<>(() -> ignored -> Stream.of(new Signal.Error<>(new RuntimeException("Boom")))));
+        boom.subscribe(new Subscriber<UUID>() {
+            @Override
+            public void onSubscribe(Subscription subscription) {
+                // NOTE: Trigger initial pull to ensure subsequent subscribers can fail without requesting
+                subscription.request(1);
+            }
+
+            @Override
+            public void onNext(UUID item) {
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+            }
+
+            @Override
+            public void onComplete() {
+            }
+        });
+        return boom;
     }
 }

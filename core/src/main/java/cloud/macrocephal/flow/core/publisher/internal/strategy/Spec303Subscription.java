@@ -13,21 +13,18 @@ import static java.math.BigInteger.ZERO;
 import static java.math.BigInteger.valueOf;
 import static java.util.Objects.requireNonNull;
 
-public record Spec303Subscription<T>(Subscriber<? super T> subscriber,
-                                     Consumer<Subscriber<? super T>> cancelHandler,
-                                     LongConsumer requestHandler,
-                                     List<Long> requests) implements Subscription {
+public class Spec303Subscription<T> implements Subscription {
+    private final Consumer<Subscriber<? super T>> cancelHandler;
+    private final List<Long> requests = new LinkedList<>();
+    private final Subscriber<? super T> subscriber;
+    private final LongConsumer requestHandler;
+
     public Spec303Subscription(Subscriber<? super T> subscriber,
                                Consumer<Subscriber<? super T>> cancelHandler,
                                LongConsumer requestHandler) {
-        this(subscriber, cancelHandler, requestHandler, new LinkedList<>());
-    }
-
-    public Spec303Subscription {
-        requireNonNull(subscriber);
-        requireNonNull(cancelHandler);
-        requireNonNull(requestHandler);
-        requireNonNull(requests);
+        this.requestHandler = requireNonNull(requestHandler);
+        this.cancelHandler = requireNonNull(cancelHandler);
+        this.subscriber = requireNonNull(subscriber);
     }
 
     @Override
