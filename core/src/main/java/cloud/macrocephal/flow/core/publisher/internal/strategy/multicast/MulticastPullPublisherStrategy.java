@@ -57,13 +57,15 @@ public class MulticastPullPublisherStrategy<T> extends BaseMulticastPublisherStr
                     subscriber,
                     MulticastPullPublisherStrategy.this::cancel,
                     n -> MulticastPullPublisherStrategy.this.request(subscriber, n)));
+
+            tryTerminate(subscriber);
         }
     }
 
     synchronized private void request(Subscriber<? super T> subscriber, long n) {
         final var counter$ = new long[]{max(0, n)};
 
-        if (active && subscribers.contains(subscriber) && tryAdvance(subscriber)) {
+        if (active && subscribers.contains(subscriber) && !tryTerminate(subscriber)) {
             final var fromEntries = getFromEntries(subscriber, counter$);
 
             if (0 < counter$[0]) {
@@ -74,7 +76,7 @@ public class MulticastPullPublisherStrategy<T> extends BaseMulticastPublisherStr
                 fromEntries.forEachOrdered(subscriber::onNext);
             }
 
-            tryAdvance(subscriber);
+            tryTerminate(subscriber);
         }
     }
 

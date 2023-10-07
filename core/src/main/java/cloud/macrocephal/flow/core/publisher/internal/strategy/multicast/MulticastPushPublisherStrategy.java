@@ -66,7 +66,7 @@ public class MulticastPushPublisherStrategy<T> extends BaseMulticastPublisherStr
                                     richSubscriber.requested.updateAndGet(valueOf(n)::add);
 
                                     if (consumeAll(richSubscriber)) {
-                                        tryAdvance(richSubscriber);
+                                        tryTerminate(richSubscriber);
                                     }
                                 }
 
@@ -96,7 +96,7 @@ public class MulticastPushPublisherStrategy<T> extends BaseMulticastPublisherStr
                         ofNullable(feedback).ifPresent(BackPressureFeedback::stop);
                         Buffer.from(subscribers).forEach(subscriber -> {
                             if (consumeAll((RichSubscriber<? super T>) subscriber)) {
-                                tryAdvance(subscriber);
+                                tryTerminate(subscriber);
                             }
                         });
                     }
@@ -144,7 +144,7 @@ public class MulticastPushPublisherStrategy<T> extends BaseMulticastPublisherStr
                         ofNullable(feedback).ifPresent(BackPressureFeedback::stop);
                         Buffer.from(subscribers).forEach(subscriber -> {
                             if (consumeAll((RichSubscriber<? super T>) subscriber)) {
-                                tryAdvance(subscriber);
+                                tryTerminate(subscriber);
                             }
                         });
                     }

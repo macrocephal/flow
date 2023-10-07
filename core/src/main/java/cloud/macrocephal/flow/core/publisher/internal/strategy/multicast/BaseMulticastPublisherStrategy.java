@@ -40,19 +40,18 @@ public abstract class BaseMulticastPublisherStrategy<T> extends BasePublisherStr
     @Override
     synchronized protected void cancel(Subscriber<? super T> subscriber) {
         freeUpSubscriber(subscriber);
-
         super.cancel(subscriber);
     }
 
-    synchronized protected boolean tryAdvance(Subscriber<? super T> subscriber) {
+    synchronized protected boolean tryTerminate(Subscriber<? super T> subscriber) {
         if (completed) {
             complete(subscriber);
-            return false;
+            return true;
         } else if (nonNull(error)) {
             error(subscriber, error);
-            return false;
-        } else {
             return true;
+        } else {
+            return false;
         }
     }
 
