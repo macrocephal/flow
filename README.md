@@ -4,6 +4,19 @@ A modern and versatile Java reactive library
 
 ## Table of Content
 
++ [Overview](#overview)
++ [Features](#features)
++ [Primitives](#primitives)
++ [Installation](#installation)
++ [Usages](#usages)
+  + [Factories](#factories)
+  + [Constructors](#constructors)
+  + [Back Pressure / Lagging Strategies](#back-pressure--lagging-strategies)
+  + [Operators](#operators)
++ [Roadmap](#roadmap)
++ [Contribution](#contribution)
++ [License](#license)
+
 ## Overview
 
 This library provides a comprehensive implementation of the [Java 9 Flow API](https://docs.oracle.com/javase%2F9%2Fdocs%2Fapi%2F%2F/java/util/concurrent/Flow.html). It is heavily inspired from [RxJS](https://rxjs.dev/) operators chaining syntax while maintaining [Project Reactor](https://projectreactor.io/) similar idioms and capabilities.
