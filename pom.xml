@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>cloud.macrocephal</groupId>
+    <groupId>cloud.macrocephal.flow</groupId>
     <artifactId>flow-parent</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
@@ -28,7 +28,7 @@
         <dependencies>
             <!-- SELF -->
             <dependency>
-                <groupId>cloud.macrocephal</groupId>
+                <groupId>cloud.macrocephal.flow</groupId>
                 <artifactId>flow-core</artifactId>
                 <version>${revision}</version>
                 <scope>test</scope>
@@ -36,15 +36,10 @@
 
             <!-- TESTING:self -->
             <dependency>
-                <groupId>cloud.macrocephal</groupId>
+                <groupId>cloud.macrocephal.flow</groupId>
                 <artifactId>test-flow-base</artifactId>
                 <version>${revision}</version>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>cloud.macrocephal</groupId>
-                <artifactId>shade-flow-reactive-streams-tck-flow</artifactId>
-                <version>${revision}</version>
             </dependency>
 
             <!-- TESTING:tck -->

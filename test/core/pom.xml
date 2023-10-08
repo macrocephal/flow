@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>cloud.macrocephal</groupId>
+        <groupId>cloud.macrocephal.flow</groupId>
         <artifactId>test-flow</artifactId>
         <version>${revision}</version>
     </parent>
@@ -16,7 +16,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>cloud.macrocephal</groupId>
+            <groupId>cloud.macrocephal.flow</groupId>
             <artifactId>flow-core</artifactId>
         </dependency>
 
@@ -26,7 +26,7 @@
         </dependency>
 
         <dependency>
-            <groupId>cloud.macrocephal</groupId>
+            <groupId>cloud.macrocephal.flow</groupId>
             <artifactId>test-flow-base</artifactId>
             <scope>test</scope>
         </dependency>
