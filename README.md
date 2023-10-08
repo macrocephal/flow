@@ -135,7 +135,7 @@ new Swarm<>(new Pull<>(
 new Swarm<>(new Push<>(
         true, // Lazy publisher
         new BigInteger("0xfffffffffffffffffffff"), // Buffer capacity
-        BackPressureStrategy.FEEDBACK, // Back pressure strategy
+        BackPressureStrategy.PAUSE, // Back pressure strategy
         push -> /** should start asynchronously call push.accept(signal, null or BackPressureFeedback-instance) **/
 ```
 
@@ -153,7 +153,7 @@ LagStrategy:
 + `LagStrategy.DROP`: forget that value as if it never happened
 
 BackPressureStrategy:
-+ `BackPressureStrategy.FEEDBACK`: try to pause the source (actual pausing is dependent on the source, it is implied that the value that triggered a positive back pressure detection was not accepted: the source might want to send it again)
++ `BackPressureStrategy.PAUSE`: try to pause the source (actual pausing is dependent on the source, it is implied that the value that triggered a positive back pressure detection was not accepted: the source might want to send it again)
 + `BackPressureStrategy.ERROR`: mark publisher as in error state and propagate to subscribers
 + `BackPressureStrategy.THROW`: blow up the stack trace
 + `BackPressureStrategy.DROP`: forget that value as if it never happened

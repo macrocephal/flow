@@ -120,7 +120,7 @@ public class UnicastPushPublisherStrategy<T> extends BasePublisherStrategy<T> {
                                         });
                                         complete(subscriber);
                                     }
-                                    case FEEDBACK -> ofNullable(feedback).ifPresent(ignored -> {
+                                    case PAUSE -> ofNullable(feedback).ifPresent(ignored -> {
                                         resume.updateAndGet(__ -> feedback::resume);
                                         feedback.pause();
                                     });

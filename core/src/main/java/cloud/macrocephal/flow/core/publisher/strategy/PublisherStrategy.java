@@ -6,7 +6,7 @@ import java.math.BigInteger;
 import java.util.function.*;
 import java.util.stream.Stream;
 
-import static cloud.macrocephal.flow.core.publisher.strategy.BackPressureStrategy.FEEDBACK;
+import static cloud.macrocephal.flow.core.publisher.strategy.BackPressureStrategy.PAUSE;
 import static cloud.macrocephal.flow.core.publisher.strategy.LagStrategy.ERROR;
 import static java.math.BigInteger.valueOf;
 import static java.util.Objects.requireNonNull;
@@ -61,7 +61,7 @@ public sealed interface PublisherStrategy<T> permits PublisherStrategy.Push, Pub
         }
 
         public Push(boolean lazy, Consumer<BiConsumer<Signal<T>, BackPressureFeedback>> pushConsumer) {
-            this(lazy, FEEDBACK, pushConsumer);
+            this(lazy, PAUSE, pushConsumer);
         }
     }
 

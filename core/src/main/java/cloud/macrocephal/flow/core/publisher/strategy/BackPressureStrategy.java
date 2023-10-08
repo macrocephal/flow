@@ -1,7 +1,7 @@
 package cloud.macrocephal.flow.core.publisher.strategy;
 
 public enum BackPressureStrategy {
-    FEEDBACK,
+    PAUSE,
     ERROR,
     THROW,
     DROP,

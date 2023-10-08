@@ -117,7 +117,7 @@ public class MulticastPushPublisherStrategy<T> extends BaseMulticastPublisherStr
                                         }
                                     });
                                 }
-                                case FEEDBACK -> {
+                                case PAUSE -> {
                                     ofNullable(feedback).ifPresent(BackPressureFeedback::pause);
                                     paused = true;
                                 }

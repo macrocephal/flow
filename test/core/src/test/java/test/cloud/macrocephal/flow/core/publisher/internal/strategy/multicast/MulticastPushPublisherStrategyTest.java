@@ -30,7 +30,7 @@ public class MulticastPushPublisherStrategyTest extends FlowPublisherVerificatio
 
     @Override
     public Publisher<UUID> createFlowPublisher(long limit) {
-        return new Swarm<>(new Push<>(true, null, BackPressureStrategy.FEEDBACK, target -> {
+        return new Swarm<>(new Push<>(true, null, BackPressureStrategy.PAUSE, target -> {
             final var paused = new AtomicBoolean();
             final var stopped = new AtomicBoolean();
             final var theLimit = new AtomicLong(limit);
@@ -70,7 +70,7 @@ public class MulticastPushPublisherStrategyTest extends FlowPublisherVerificatio
 
     @Override
     public Publisher<UUID> createFailedFlowPublisher() {
-        return new Swarm<>(new Push<>(false, null, BackPressureStrategy.FEEDBACK, target -> {
+        return new Swarm<>(new Push<>(false, null, BackPressureStrategy.PAUSE, target -> {
             target.accept(new Signal.Error<>(new RuntimeException("Boom!")), null);
         }));
     }

@@ -30,7 +30,7 @@ public class UnicastPushPublisherStrategyTest extends FlowPublisherVerification<
 
     @Override
     public Publisher<UUID> createFlowPublisher(long limit) {
-        return new Swarm<>(new Push<>(true, 0L, BackPressureStrategy.FEEDBACK, target -> {
+        return new Swarm<>(new Push<>(true, 0L, BackPressureStrategy.PAUSE, target -> {
             final var paused = new AtomicBoolean();
             final var stopped = new AtomicBoolean();
             final var theLimit = new AtomicLong(limit);
@@ -69,7 +69,7 @@ public class UnicastPushPublisherStrategyTest extends FlowPublisherVerification<
 
     @Override
     public Publisher<UUID> createFailedFlowPublisher() {
-        return new Swarm<>(new Push<>(false, 0L, BackPressureStrategy.FEEDBACK, target -> {
+        return new Swarm<>(new Push<>(false, 0L, BackPressureStrategy.PAUSE, target -> {
             target.accept(new Signal.Error<>(new RuntimeException("Boom!")), null);
         }));
     }
