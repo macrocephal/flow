@@ -1,5 +1,7 @@
 # Flow
 
+A modern and versatile Java reactive library
+
 ## Table of Content
 
 ## Overview
