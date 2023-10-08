@@ -1,0 +1,42 @@
+@startuml
+skinparam sequenceMessageAlign center
+participant "Subscriber 01"
+participant "Subscriber 02"
+participant Publisher
+participant "Source 01"
+participant "Source 02"
+
+alt#transparent #F08 subscription
+    "Subscriber 01" -> Publisher: Subscribe
+    Publisher --> "Subscriber 01": Subscription
+    Publisher -> Publisher: Create "Source 01" from source factory
+    Publisher --> "Source 01": Trigger pushing
+
+    "Subscriber 02" -> Publisher: Subscribe
+    Publisher --> "Subscriber 02": Subscription
+    Publisher --> Publisher: Create "Source 02" from source factory
+    Publisher -> "Source 02": Trigger pushing
+end
+
+alt#transparent #F80 publish
+    "Source 01" -> Publisher: Push signals (value, error, complete), ideally asynchronous
+    Publisher -> Publisher: Check accumulated request count (ARC) for "Subscriber 01"
+    Publisher --> "Source 01": If ARC is 0 (Zero), apply back pressure strategy
+    Publisher --> "Subscriber 01": If ARC > 0 (Zero), send pushed \nitems down stream, decrement ARC
+end
+
+alt#transparent #F80 publish
+    "Source 02" -> Publisher: Push signals (value, error, complete), ideally asynchronous
+    Publisher -> Publisher: Check accumulated request count (ARC) for "Subscriber 02"
+    Publisher --> "Source 01": If ARC is 0 (Zero), apply back pressure strategy
+    Publisher --> "Subscriber 02": If ARC > 0 (Zero), send pushed \nitems down stream, decrement ARC
+end
+
+alt#transparent #F80 request
+    "Subscriber 01" -> Publisher: Requests n values count
+    Publisher --> Publisher: Accumulate n to requests count for "Subscriber 01"
+
+    "Subscriber 02" -> Publisher: Requests n values count
+    Publisher --> Publisher: Accumulate n to requests count for "Subscriber 02"
+end
+@enduml

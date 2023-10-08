@@ -1,0 +1,35 @@
+@startuml
+skinparam sequenceMessageAlign center
+participant "Subscriber 01"
+participant "Subscriber 02"
+participant Publisher
+participant Source
+
+alt#transparent #F08 subscription
+    "Subscriber 01" -> Publisher: Subscribe
+    Publisher --> "Subscriber 01": Subscription
+    Publisher -> Publisher: Create "Source" from source factory
+    Publisher --> "Source": Trigger pushing
+end
+
+alt#transparent #F80 publish
+    Source -> Publisher: Push signals (value, error, complete), \n ideally asynchronous
+    Publisher -> Publisher: Try to append value to buffer change publisher state for error/complete
+    Publisher --> Source: If append fail, apply back pressure strategy
+    Publisher -> Publisher: Otherwise, iterate over subscribers, and for each
+    Publisher --> "Subscriber 01": While ARC > 0 for "Subscriber 01" and \n there are values to consume from buffer, \n send them to "Subscriber 01" and decrement ARC for "Subscriber 01"
+    Publisher --> "Subscriber 02": While ARC > 0 for "Subscriber 02" and \n there are values to consume from buffer, \n send them to "Subscriber 02" and decrement ARC for "Subscriber 02"
+end
+
+alt#transparent #F80 request
+    "Subscriber 01" -> Publisher: Requests n values count
+    Publisher -> Publisher: Accumulate n to requests count (ARC) for "Subscriber 01"
+    Publisher -> Publisher: While ARC > 0 for "Subscriber 01" and \n there are values in the buffer for "Subscriber 01"...
+    Publisher --> "Subscriber 01": Send them to "Subscriber 01" and \n decrement ARC for "Subscriber 01"
+
+    "Subscriber 02" -> Publisher: Requests n values count
+    Publisher -> Publisher: Accumulate n to requests count (ARC) for "Subscriber 02"
+    Publisher -> Publisher: While ARC > 0 for "Subscriber 02" and \n there are values in the buffer for "Subscriber 02"...
+    Publisher --> "Subscriber 02": Send them to "Subscriber 02" \n and decrement ARC for "Subscriber 02"
+end
+@enduml

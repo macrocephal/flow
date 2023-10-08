@@ -1,0 +1,30 @@
+@startuml
+skinparam sequenceMessageAlign center
+participant "Subscriber 01"
+participant "Subscriber 02"
+participant Publisher
+participant "Source 01"
+participant "Source 02"
+
+alt#transparent #F08 subscription
+    "Subscriber 01" -> Publisher: Subscribe
+    Publisher -> Publisher: Create "Source 01" for "Subscriber 01"
+    Publisher --> "Subscriber 01": Subscription
+
+    "Subscriber 02" -> Publisher: Subscribe
+    Publisher -> Publisher: Create "Source 02" for "Subscriber 02"
+    Publisher --> "Subscriber 02": Subscription
+end
+
+alt#transparent #F80 request/publish
+    "Subscriber 01" -> Publisher: Requests n values count
+    Publisher -> "Source 01": Request n values count
+    "Source 01" --> Publisher: Compute 0..n values and send them
+    Publisher --> "Subscriber 01": Send through 0..n values received from source
+
+    "Subscriber 02" -> Publisher: Requests n values count
+    Publisher -> "Source 02": Request n values count
+    "Source 02" --> Publisher: Compute 0..n values and send them
+    Publisher --> "Subscriber 02": Send through 0..n values received from source
+end
+@enduml

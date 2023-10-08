@@ -1,0 +1,13 @@
+@startuml
+alt#transparent #F08 subscription
+    Subscriber -> Publisher: Subscribe
+    Publisher --> Subscriber: Subscription
+end
+
+alt#transparent #F80 request/publish
+    Subscriber -> Publisher: Requests n values count
+    Publisher -> Source: Request n values count
+    Source --> Publisher: Compute 0..n values and send them
+    Publisher --> Subscriber: Send through 0..n values received from source
+end
+@enduml

@@ -1,0 +1,39 @@
+@startuml
+skinparam sequenceMessageAlign center
+participant "Subscriber 01"
+participant "Subscriber 02"
+participant Publisher
+participant Source
+
+alt#transparent #F08 subscription
+    "Subscriber 01" -> Publisher: Subscribe
+    Publisher -> Publisher: Create "Source"
+    Publisher --> "Subscriber 01": Subscription
+
+    "Subscriber 02" -> Publisher: Subscribe
+    Publisher ->x Publisher: Do not create "Source", it's done \n already & shared across subscribers
+    Publisher --> "Subscriber 02": Subscription
+end
+
+alt#transparent #F80 request/publish
+    "Subscriber 01" -> Publisher: Requests n values count
+    Publisher -> Publisher: Read 0..k values from buffer
+    Publisher -> Source: Request n-k values count
+    Source --> Publisher: Compute n-k..n values and send them (if necessary)
+    Publisher -> Publisher: Try to append to buffer n-k..n computed values
+    Publisher --> Source: If buffer capacity is full, apply lag strategy
+    Publisher --> "Subscriber 01": Otherwise, send through 0..n values received from source
+
+    "Subscriber 02" -> Publisher: Requests n values count (same number as "Subscriber 01")
+    Publisher -> Publisher: Build stream of n elements from buffer
+    Publisher --> "Subscriber 02": Send through 0..n values received from internal buffer
+
+    "Subscriber 02" -> Publisher: Requests p values count
+    Publisher -> Publisher: Check buffer and see that there's nothing in there for "Subscriber 02"
+    Publisher -> Source: Request p values count
+    Source --> Publisher: Compute 0..p values and send them
+    Publisher -> Publisher: Try to append to buffer 0..p computed values
+    Publisher --> Source: If buffer capacity is full, apply lag strategy
+    Publisher --> "Subscriber 02": Otherwise, send through 0..p values received from source
+end
+@enduml

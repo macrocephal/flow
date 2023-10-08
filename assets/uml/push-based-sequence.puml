@@ -1,0 +1,14 @@
+@startuml
+alt#transparent #F08 subscription
+    Subscriber -> Publisher: Subscribe
+    Publisher --> Subscriber: Subscription
+    Publisher -> Publisher: Create "Source" from source factory
+    Publisher --> Source: Trigger pushing
+end
+
+alt#transparent #F80 request/publish
+    Source -> Publisher: Push signals (value, error, complete), ideally asynchronous
+    Subscriber -> Publisher: Requests n values count
+    Publisher --> Subscriber: Emit 0..n values, as are currently available
+end
+@enduml
