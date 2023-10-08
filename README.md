@@ -240,6 +240,7 @@ mvn clean install
 + Stick to the [Reactive Manifesto](https://www.reactivemanifesto.org/) design principles
 + Adhere to the [Reactive Streams](http://www.reactive-streams.org/) standards, validated to the TCK tests
 + Ensure consistency through test cases: I welcome pull requests, documentation improvement and new features
++ Diagrams are done with PlantUML which sources are tracked in this repository: images in here are links generated from those sources using a [PlantUML Server](http://www.plantuml.com/plantuml)
 
 ## License
 
