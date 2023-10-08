@@ -71,10 +71,38 @@ Publisher strategies are implementations of the `cloud.macrocephal.flow.core.pub
 
 + Push/Pull:
   + Push: The source of the publisher pushes as many data as it can, ideally, asynchronously
+    <br/>
+    ![Push-based sequence diagram](http://www.plantuml.com/plantuml/png/XP11Qm8n48Nl-oiUUcbXjHx5Gn5AUvRQFp0RnpMGJROp4y5_tpLBNLgalGIIz_BDUxDL8x7SXOg2pKqeQa_2qJ1_MwsXkL4dlZUVOWK0-_6XOS7Y6RlS1Aydbiqa5DjDm6AmtRJ9Dn4dwq_WYp0POxPFMHpFS9JKGSi5HtAMv79lL35iy26-RLdGPptvs5OS3zMTYkiLX3ypgptr8wSmHyglGBi11VLjfA1uE5F8N8D5ajHmgUi36p_My0Uc42uWlKHtaXHJrhzNzpucK4GKgWwu7EsVHRvsth1QBhy_rI052SDbkRQxHZYJ3zG4BlMtmv6xy0K0)
+    <br/>
+    <u>Image: Push-based sequence diagram</u>
   + Pull: The source of the publisher is asked to compute n items which it tries to fully
+    <br/>
+    ![Pull-based sequence diagram](https://www.plantuml.com/plantuml/png/XP3DIiKm48NtVOg1k-wro-922e9hqIT8qz46yXFdfyzlQ22bKhnP327dctCcCx4O4Ws-CrvkGYPoDeHHuFOsZC0wioMNnQNOGJcVzM56Wlu5tdNsZbUavqFOiIP0Nx2c7LnrnBXq5y7Z08G_YYnFkHhzd_rHOOO8c_7b2ZPfbB-Jb46IaiNMSCLN1FfpmciAMGLXkDzRZuaBC9OYAuP7lwuS9VrUJoQ45js62tnH2i1x-BwMgHGD_XS0)
+    <br/>
+    <u>Image: Pull-based sequence diagram</u>
 + Casting (decided by buffer capacity: _<= 0 translate to unicast, null or otherwise translate to multicast_):
   + Unicast: each subscriber got its source and tries receives its own sequence of data (e.g.: each subscriber get its sequence of random numbers)
+    <br/>
+    ![Pull-based unicast sequence diagram](http://www.plantuml.com/plantuml/png/hP7DRW8n38JlUGeBpb2Q4-gXeghKMwMgVO8G34JDps8xF7yZLaeXIzL5ufB3pdZyxNZ5OaXoy8g_NUmCcG2CXupHuZiocns-UBUBO34AaYeESTPr9WfCllAQBRar4YmU9tzh-bBxo6llU3z8IvairgJ1zvAYZ9Ufa8bS75Z4wTjY2TolwiIbg02W1OFPy-_E9wZYoLk5nlLAQ0JFgM2Rg8rk8qf6u-ZtLRmXdxuFdxx2f__bqoqVnisrbfSB83naP7de-hGHHN_s4mmHZiPdPB0fHndyrdd9TUhQq9aFPaqTANHPYZIVrq4JDy1O7jbZ67Mftamfx_ONIOGMtH4tiAKKW4yKOqvvUmDwP0Fw_WtecniePhKgJmvU_G00)
+    <br/>
+    <u>Image: Pull-based unicast sequence diagram</u>
+    <br/>
+    <br/>
+    <br/>
+    ![Push-based unicast sequence diagram](http://www.plantuml.com/plantuml/png/pLJ1Qjj04BthAnx9nG47N9r23Y4cKEYX4DAUIY_hrLXUiffLPtPRzFTTMwbmPTLE2pMv6Anvyzw-URDxhz58J8qlzDbnQyGqKFgMY2rz95LJqzAxcc698qcH4T5PrngEkFYKLch5hKYmU7VnvrhvU-qnhRpJpG5RI6BfW6dudbaAu-Db5CEQ4PIBb-yNDz1UgeqkS05WV31Sts7GlCLGt6670gupRDIPmMFk0JzYVH0oaVPTO2sXWVR_ryR68DsavD1nYy_YwZeNsgGRntLnQAVyPplb2Jl7_PIlyRDlfvomGrnDPNYpGDjpRFa6YiFe7ZCFrDLil6BstVX4Sv18a3biQ5fFaQxcS1KPxpiOxTXk9718UZoy3Tbd66jJaxo9L46sTq1ZPaqSCLi-FLnX7MIy8AVo_B16ReLJB33xGXBowKpR-WuhanLR8TKa18sIPUlkz4eEd7Txb4fSxOPC5RwoYzGegl23jxnacZagia8DSTos_cqCvHkFeJnx3EL_Zk75zYiUiwSUgM3iSj1-LCVlzdAOC1Wn_99xwPtSy-c7wEn7oQgxiTtddzJuuYS0)
+    <br/>
+    <u>Image: Push-based unicast sequence diagram</u>
   + Multicast: all subscribers share a source and receive the exact same sequence of data (e.g.: all subscribers get the same sequence of random numbers)
+    <br/>
+    ![Pull-based multicast sequence diagram](http://www.plantuml.com/plantuml/png/nLF1RjD04BtxAvvI2OhKXf1JnG4LYf0u813bo6Mo7iUhh6VDpcmXVu_3AcdhbYJbmiK7pxmtxys-kLIZPBaBbQwyz9IeW_AFpEBu4wlIajy6lnGu5kDK3HtcdUz939Fhl52N_88JPgycVw_DxzU-v4NmsexOhcDEZgkAWfrO8j6Xo68u-J2xW1QstdoK2i1uDixVtDA-ngwuwRqjZBgk4fCn9cNoPDmxD8-cx8YBZeT2viSB-NMtxNs4H8ExB-WCtfuhwYYCxm8AGxbUuncqfSGroAMe2jq9q4CMvcCBBFLZ6x-O8Mr2eFQoBsn7BFrhGIW4DnGoArpCOYDDOmpLc4sdgosaIR738ZSDfuV0ifVT9CZvwk6eqeJpqLl7hi_66yXqkXD8KaDv-5ZB7Kvz0s77gfJMB_Rg_fRMi0Zg-p_eY29vI-_Aj1fbpfZgZfMFpHRgg2VdRGslQ788Pnlsi4QW9TGI6I_NnqJqimsbdrxvR6ijnRniCRlZEx5ZVyDrMRUMoziVvtrFZ5EbZY6vsy18nwBsx_9Tzg7UM6Jg41i8E737OkCq78xsSNwz62UXi6L-Yl7--6nVjUnMszSjIMDOImORwZnSjaHhlIpXfVn24zDOoE4hw9zw0yDc-aSlu5yYNzZ-L-3d-mFVxmtyq5nT3f_SXUet)
+    <br/>
+    <u>Image: Pull-based multicast sequence diagram</u>
+    <br/>
+    <br/>
+    <br/>
+    ![Push-based multicast sequence diagram](http://www.plantuml.com/plantuml/png/nLLDQzj04BthLmpE9G75TNKAFeIOGA67qf04UkbblHv9IrQxoinkYlzzPxsnGrNL5asX5vlrl8-tpoFxXeEY43jRy9DnlIBL0UDpHAVn2pAh1bVMD0uqke1K228ORNhb0imUufercJKIB3xE_ZohVftTnRKrt0xK7dmaZKMXR3WBf1pBK3pXxDFY2ZYhzS5uLm30q1ikhzzabt0O9kpR02u5Dc0AUAXzm0zKRmbLG9Zbf3EeoKjPkmFKIWTFsr6_35_28vccGO8-ScjSKw3RZ5ttQW5zLjYfPVeWofr809l6ASjm_g9in1AGo5C9sdUznO0N9NntO3QehDs2ugtJBNdd8n-zvIDj8NXGVI_vO2UTpkjOruBLhN8DGdyWSqYTr9wo_OUz-qWJ-IPB-5plrMjbR9aE4d2jz1FqXCoHK6H9T9ljqQXVWxpzC8mbc8290FubPJfymopgRfFZATrEMOTlhR48g_jRk8P5OWuXIJ4rcymH564kYLDBsZkE7URLo9ML2Sie725q0XhLsw0cxD25v3pcUYfwTJfwzO-ZLrEY2-h8eXC-YtsOy4ZVPoI3ssVMFhfmT3zMMiSkMXLGMC7ltLwfS2vvBqvrFHHzntwOtMUltOunv_Fvf1-iKyiavgVtwVVEg__NUVMkpgk_xhoQqdbrh7EP9kFf3yADlAJ_svy0)
+    <br/>
+    <u>Image: Push-based multicast sequence diagram</u>
 + Back pressure / Lagging:
   + Back pressure: on push-based publisher, describe a state where subscribers cannot keep up with incoming data
     + Unicast: it's detected when a published item meets an accumulated request count at zero
