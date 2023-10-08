@@ -25,20 +25,20 @@ import static java.util.Optional.ofNullable;
 public class UnicastPushPublisherStrategy<T> extends BasePublisherStrategy<T> {
     private final Consumer<BiConsumer<Signal<T>, BackPressureFeedback>> pushConsumer;
     private final BackPressureStrategy backPressureStrategy;
-    private final boolean cold;
+    private final boolean lazy;
 
     public UnicastPushPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
         super(publisherStrategy);
         //noinspection PatternVariableHidesField
         if (publisherStrategy instanceof Push(
-                final var cold,
+                final var lazy,
                 final var capacity,
                 final var backPressureStrategy,
                 final var pushConsumer
         ) && 0 <= ZERO.compareTo(capacity)) {
             this.backPressureStrategy = backPressureStrategy;
             this.pushConsumer = pushConsumer;
-            this.cold = cold;
+            this.lazy = lazy;
         } else {
             throw new IllegalArgumentException("%s not accepted here.".formatted(publisherStrategy));
         }
@@ -48,7 +48,7 @@ public class UnicastPushPublisherStrategy<T> extends BasePublisherStrategy<T> {
     synchronized public void subscribe(Subscriber<? super T> subscriber) {
         synchronized (subscriber) {
             if (!subscribers.contains(subscriber) && subscribers.add(subscriber)) {
-                final var coldPushBasedPublisherTriggerred = new AtomicBoolean();
+                final var lazyPushBasedPublisherTriggerred = new AtomicBoolean();
                 final var active = new AtomicBoolean(true);
                 final var resume = new AtomicReference<Runnable>();
                 final var stop = new AtomicReference<Runnable>();
@@ -70,15 +70,15 @@ public class UnicastPushPublisherStrategy<T> extends BasePublisherStrategy<T> {
                                     resume.getAndUpdate(__ -> null).run();
                                 }
 
-                                if (cold && !coldPushBasedPublisherTriggerred.get()) {
-                                    coldPushBasedPublisherTriggerred.set(true);
+                                if (lazy && !lazyPushBasedPublisherTriggerred.get()) {
+                                    lazyPushBasedPublisherTriggerred.set(true);
                                     startPushing(subscriber, requested, active, resume, stop);
                                 }
                             }
                         }
                 ));
 
-                if (!cold) {
+                if (!lazy) {
                     startPushing(subscriber, requested, active, resume, stop);
                 }
             }

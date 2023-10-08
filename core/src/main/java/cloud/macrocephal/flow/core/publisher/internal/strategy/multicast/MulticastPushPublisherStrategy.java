@@ -26,22 +26,22 @@ public class MulticastPushPublisherStrategy<T> extends BaseMulticastPublisherStr
     private final Consumer<BiConsumer<Signal<T>, BackPressureFeedback>> pushConsumer;
     private final BackPressureStrategy backPressureStrategy;
     private BackPressureFeedback backPressureFeedback;
-    private boolean coldPushBasedPublisherTriggerred;
-    private final boolean cold;
+    private boolean lazyPushBasedPublisherTriggerred;
+    private final boolean lazy;
     private boolean paused;
 
     public MulticastPushPublisherStrategy(PublisherStrategy<T> publisherStrategy) {
         super(publisherStrategy);
         //noinspection PatternVariableHidesField
         if (publisherStrategy instanceof Push<T>(
-                final var cold,
+                final var lazy,
                 final var capacity,
                 final var backPressureStrategy,
                 final var pushConsumer
         ) && (isNull(capacity) || 0 < capacity.compareTo(ZERO))) {
             this.backPressureStrategy = backPressureStrategy;
             this.pushConsumer = pushConsumer;
-            this.cold = cold;
+            this.lazy = lazy;
         } else {
             throw new IllegalArgumentException("%s not accepted here.".formatted(publisherStrategy));
         }
@@ -70,14 +70,14 @@ public class MulticastPushPublisherStrategy<T> extends BaseMulticastPublisherStr
                                     }
                                 }
 
-                                if (cold && !coldPushBasedPublisherTriggerred) {
-                                    coldPushBasedPublisherTriggerred = true;
+                                if (lazy && !lazyPushBasedPublisherTriggerred) {
+                                    lazyPushBasedPublisherTriggerred = true;
                                     startPushing();
                                 }
                             }
                         }));
 
-                if (!cold) {
+                if (!lazy) {
                     startPushing();
                 }
             }

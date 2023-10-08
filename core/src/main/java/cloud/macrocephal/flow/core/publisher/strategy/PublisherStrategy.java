@@ -38,7 +38,7 @@ public sealed interface PublisherStrategy<T> permits PublisherStrategy.Push, Pub
         }
     }
 
-    record Push<T>(boolean cold,
+    record Push<T>(boolean lazy,
                    BigInteger capacity,
                    BackPressureStrategy backPressureStrategy,
                    Consumer<BiConsumer<Signal<T>, BackPressureFeedback>> pushConsumer) implements PublisherStrategy<T> {
@@ -47,21 +47,21 @@ public sealed interface PublisherStrategy<T> permits PublisherStrategy.Push, Pub
             requireNonNull(backPressureStrategy);
         }
 
-        public Push(boolean cold,
+        public Push(boolean lazy,
                     long capacity,
                     BackPressureStrategy backPressureStrategy,
                     Consumer<BiConsumer<Signal<T>, BackPressureFeedback>> pushConsumer) {
-            this(cold, valueOf(capacity), backPressureStrategy, pushConsumer);
+            this(lazy, valueOf(capacity), backPressureStrategy, pushConsumer);
         }
 
-        public Push(boolean cold,
+        public Push(boolean lazy,
                     BackPressureStrategy backPressureStrategy,
                     Consumer<BiConsumer<Signal<T>, BackPressureFeedback>> pushConsumer) {
-            this(cold, defaultBufferSize(), backPressureStrategy, pushConsumer);
+            this(lazy, defaultBufferSize(), backPressureStrategy, pushConsumer);
         }
 
-        public Push(boolean cold, Consumer<BiConsumer<Signal<T>, BackPressureFeedback>> pushConsumer) {
-            this(cold, FEEDBACK, pushConsumer);
+        public Push(boolean lazy, Consumer<BiConsumer<Signal<T>, BackPressureFeedback>> pushConsumer) {
+            this(lazy, FEEDBACK, pushConsumer);
         }
     }
 
